@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>听写练习（Bahasa Melayu）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background-color: #f0f0f0;
+    }
+    .container {
+      text-align: center; padding: 20px; background: #fff; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,.1); max-width: 720px; width: 92%;
+    }
+    .question { font-size: 28px; margin-bottom: 10px; }
+    .word { font-size: 34px; margin-bottom: 16px; }
+    .btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  margin-bottom: 14px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  font-size: 18px;
+  padding: 8px 12px;
+  width: 180px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.btn.search-btn {
+  background-color: #008cff;
+}
+
+    .btn {
+      font-size: 18px; padding: 10px 20px; border: none; border-radius: 8px;
+      background-color: #dc3545; color: #fff; cursor: pointer;
+    }
+    .btn.secondary { background-color: #6c757d; }
+    .btn.info { background-color: #dc3545; }
+    .btn.success { background-color: #dc3545; }
+    .btn.warning { background-color: #ffc107; color: #000; }
+    .meaning {
+      margin-top: 10px; font-size: 20px; background: #f8f9fa; border-radius: 8px;
+      padding: 12px; min-height: 60px; line-height: 1.6; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="search-box">
+  <input 
+  type="text" 
+  id="searchInput" 
+  placeholder=""
+  onkeydown="if(event.key === 'Enter') searchWord();"
+>
+
+  <button 
+    class="btn search-btn" 
+    onclick="searchWord()">
+    Search
+  </button>
+</div>
+    <div class="question" id="question">题目 1</div>
+    <div class="word" id="word">—</div>
+    
+    <div class="btns">
+      <!-- 华文优先 -->
+       <div class="btn-row">
+      <button class="btn" onclick="playMalayWord()">🔊</button>
+      <button class="btn success" onclick="showEnglish()">English</button>
+      <button class="btn info" onclick="showChinese()">华文</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn warning" onclick="showMalaySentence()">Bina Ayat</button>
+      <button class="btn warning" onclick="showEnglishSentence()">Sentence</button>
+      <button class="btn warning" onclick="showChineseSentence()">造句</button>
+      
+      </div>
+
+      <div class="btn-row">
+      <button class="btn secondary" onclick="prevWord()">上一题</button>
+      <button class="btn secondary" onclick="nextWord()">下一题</button>
+      </div>
+
+    <div class="meaning" id="meaning"></div>
+  </div>
+
+  <script>
+    // ====== 词库 ======
+    const zh = [
+      "袜子",
+  "散步",
+  "凉爽",
+  "运动练习",
+  "跳",
+  "靠背椅",
+  "擦汗",
+  "三明治",
+  "强化骨骼",
+  "菜心",
+  "椰浆饭",
+  "鲜奶",
+  "番石榴",
+  "鸡蛋面包",
+  "蜡笔",
+  "洗手盆",
+  "牙膏",
+  "肥皂盒",
+  "香味扑鼻",
+  "治疗病人",
+  "树倒下",
+  "图画字典",
+  "直立站着",
+  "打羽毛球",
+  "零食",
+  "马铃薯",
+  "天桥",
+  "手套",
+  "树枝",
+  "荡秋千",
+  "竹筒鸡",
+  "糕点",
+  "沸腾",
+  "溢出",
+  "挂灯笼",
+  "红包",
+  "演戏",
+  "超市",
+  "舞狮",
+  "珠子",
+  "卡达山族",
+  "铃铛",
+  "铃鼓",
+  "口风琴",
+  "沙锤",
+  "彩纸",
+  "做席子",
+  "晒",
+  "浸泡",
+  "露兜树叶",
+  "画格子",
+  "峇迪图案",
+  "漫画家",
+  "乡村孩子",
+  "皇宫守卫",
+  "辉煌条纹（马来西亚国旗）",
+  "涂国旗",
+  "拼贴画",
+  "拍照",
+  "微笑一下",
+  "登山",
+  "露天市场",
+  "瓶盖",
+  "握笔",
+  "敏捷地游泳",
+  "种子",
+  "施肥的泥土",
+  "木薯",
+  "环保",
+  "捕蚊器",
+  "风扇",
+  "鞋油",
+  "纸盘",
+  "冰棒棍",
+  "向日葵",
+  "有刺",
+  "枝叶茂盛的树",
+  "枯叶",
+  "稻农",
+  "互助合作",
+  "二手物品",
+  "阅读资料",
+  "手工艺品",
+  "科学展览",
+  "装饰篱笆",
+  "再循环",
+  "环境",
+  "杀虫剂",
+  "空罐子",
+  "装饰品"
+    ];
+
+    const py = [
+  "wà zi",
+  "sàn bù",
+  "liáng shuǎng",
+  "yùn dòng liàn xí",
+  "tiào",
+  "kào bèi yǐ",
+  "cā hàn",
+  "sān míng zhì",
+  "qiáng huà gǔ gé",
+  "cài xīn",
+  "yē jiāng fàn",
+  "xiān nǎi",
+  "fān shí liu",
+  "jī dàn miàn bāo",
+  "là bǐ",
+  "xǐ shǒu pén",
+  "yá gāo",
+  "féi zào hé",
+  "xiāng wèi pū bí",
+  "zhì liáo bìng rén",
+  "shù dǎo xià",
+  "tú huà zì diǎn",
+  "zhí lì zhàn zhe",
+  "dǎ yǔ máo qiú",
+  "líng shí",
+  "mǎ líng shǔ",
+  "tiān qiáo",
+  "shǒu tào",
+  "shù zhī",
+  "dàng qiū qiān",
+  "zhú tǒng jī",
+  "gāo diǎn",
+  "fèi téng",
+  "yì chū",
+  "guà dēng long",
+  "hóng bāo",
+  "yǎn xì",
+  "chāo shì",
+  "wǔ shī",
+  "zhū zi",
+  "kǎ dá shān zú",
+  "líng dāng",
+  "líng gǔ",
+  "kǒu fēng qín",
+  "shā chuí",
+  "cǎi zhǐ",
+  "zuò xí zi",
+  "shài",
+  "jìn pào",
+  "lù dōu shù yè",
+  "huà gé zi",
+  "bā dí tú àn",
+  "màn huà jiā",
+  "xiāng cūn hái zi",
+  "huáng gōng shǒu wèi",
+  "huī huáng tiáo wén",
+  "tú guó qí",
+  "pīn tiē huà",
+  "pāi zhào",
+  "wēi xiào yī xià",
+  "dēng shān",
+  "lù tiān shì chǎng",
+  "píng gài",
+  "wò bǐ",
+  "mǐn jié de yóu yǒng",
+  "zhǒng zi",
+  "shī féi de ní tǔ",
+  "mù shǔ",
+  "huán bǎo",
+  "bǔ wén qì",
+  "fēng shàn",
+  "xié yóu",
+  "zhǐ pán",
+  "bīng bàng gùn",
+  "xiàng rì kuí",
+  "yǒu cì",
+  "zhī yè mào shèng de shù",
+  "kū yè",
+  "dào nóng",
+  "hù zhù hé zuò",
+  "èr shǒu wù pǐn",
+  "yuè dú zī liào",
+  "shǒu gōng yì pǐn",
+  "kē xué zhǎn lǎn",
+  "zhuāng shì lí ba",
+  "zài xún huán",
+  "huán jìng",
+  "shā chóng jì",
+  "kōng guàn zi",
+  "zhuāng shì pǐn"
+];
+
+    const en = [
+      "socks",
+  "stroll",
+  "cool",
+  "sports practice",
+  "jump",
+  "armchair",
+  "wipe sweat",
+  "sandwich",
+  "strengthen bones",
+  "choy sum",
+  "nasi lemak",
+  "fresh milk",
+  "guava",
+  "egg bread",
+  "crayon",
+  "sink",
+  "toothpaste",
+  "soap dish",
+  "fragrant",
+  "treat patients",
+  "fallen tree",
+  "picture dictionary",
+  "stand upright",
+  "play badminton",
+  "snacks",
+  "potato",
+  "pedestrian bridge",
+  "gloves",
+  "tree branch",
+  "play on the swing",
+  "chicken in bamboo",
+  "cakes",
+  "boiling",
+  "overflow",
+  "hang lanterns",
+  "red packet",
+  "act",
+  "supermarket",
+  "lion dance",
+  "beads",
+  "Kadazan people",
+  "bell",
+  "tambourine",
+  "melodica",
+  "maracas",
+  "coloured paper",
+  "make a mat",
+  "dry in the sun",
+  "dip",
+  "screwpine leaves",
+  "draw a pond",
+  "batik pattern",
+  "cartoonist",
+  "village child",
+  "palace guard",
+  "Jalur Gemilang",
+  "paint the flag",
+  "collage",
+  "take a photo",
+  "smile a little",
+  "climb a mountain",
+  "open-air market",
+  "bottle cap",
+  "pencil grip",
+  "swim swiftly",
+  "seeds",
+  "fertilised soil",
+  "cassava",
+  "eco-friendly",
+  "mosquito trap",
+  "fan",
+  "shoe polish",
+  "paper plate",
+  "ice cream stick",
+  "sunflower",
+  "thorny",
+  "leafy tree",
+  "dry leaves",
+  "paddy farmer",
+  "gotong-royong",
+  "used items",
+  "read information",
+  "handicraft",
+  "Science exhibition",
+  "decorate the fence",
+  "recycle",
+  "environment",
+  "insecticide",
+  "empty tin",
+  "decorative items"
+    ];
+
+    const bm = [
+"stoking",
+  "bersiar-siar",
+  "nyaman",
+  "latihan sukan",
+  "lompat",
+  "kerusi sandar",
+  "mengelap peluh",
+  "sandwic",
+  "menguatkan tulang",
+  "sawi",
+  "nasi lemak",
+  "susu segar",
+  "buah jambu",
+  "roti telur",
+  "krayon",
+  "singki",
+  "ubat gigi",
+  "bekas sabun",
+  "berbau wangi",
+  "merawat pesakit",
+  "pokok tumbang",
+  "kamus bergambar",
+  "tegak berdiri",
+  "bermain badminton",
+  "makanan ringan",
+  "kentang",
+  "jejantas",
+  "sarung tangan",
+  "ranting kayu",
+  "bermain buaian",
+  "ayam pansuh",
+  "kuih penganan",
+  "mendidih",
+  "melimpah",
+  "memasang tanglung",
+  "angpau",
+  "berlakon",
+  "pasar raya",
+  "tarian singa",
+  "manik",
+  "kaum Kadazan",
+  "kerincing",
+  "tamborin",
+  "pianika",
+  "marakas",
+  "kertas warna",
+  "membuat tikar",
+  "jemur",
+  "celupkan",
+  "daun mengkuang",
+  "melukis kolam",
+  "corak batik",
+  "tokoh kartunis",
+  "budak kampung",
+  "pengawal istana",
+  "Jalur Gemilang",
+  "mengecat bendera",
+  "kolaj",
+  "mengambil gambar",
+  "senyum sedikit",
+  "mendaki gunung",
+  "pasar tamu",
+  "tudung botol",
+  "genggaman pensel",
+  "berenang tangkas",
+  "biji benih",
+  "tanah baja",
+  "ubi kayu",
+  "mesra alam",
+  "perangkap nyamuk",
+  "kipas",
+  "pengilat kasut",
+  "piring kertas",
+  "batang aiskrim",
+  "bunga matahari",
+  "berduri",
+  "pokok rendang",
+  "daun kering",
+  "pesawah",
+  "gotong-royong",
+  "barang terpakai",
+  "membaca maklumat",
+  "kraf tangan",
+  "pameran Sains",
+  "menghias pagar",
+  "kitar semula",
+  "alam sekitar",
+  "racun serangga",
+  "tin kosong",
+  "barang hiasan"
+];
+
+    const zhSentences = [
+      "我穿鞋前先穿袜子。",
+  "我们在傍晚去公园散步。",
+  "乡村的风很凉爽。",
+  "我们在学校操场进行运动练习。",
+  "弟弟喜欢在床上跳。",
+  "爷爷坐在靠背椅上。",
+  "他用毛巾擦汗。",
+  "妈妈为我准备三明治当早餐。",
+  "喝牛奶可以强化骨骼。",
+  "妈妈煮菜心当晚餐。",
+  "我喜欢在早上吃椰浆饭。",
+  "我每天喝鲜奶。",
+  "这个番石榴很甜。",
+  "我早餐吃鸡蛋面包。",
+  "弟弟用蜡笔涂色。",
+  "妈妈在洗手盆洗手。",
+  "我用牙膏刷牙。",
+  "肥皂放在肥皂盒里。",
+  "这朵花香味扑鼻。",
+  "医生在医院治疗病人。",
+  "树因为强风而倒下。",
+  "我用图画字典查生字。",
+  "学生们在集会时直立站着。",
+  "我们在傍晚打羽毛球。",
+  "我喜欢吃零食。",
+  "妈妈炸马铃薯当早餐。",
+  "我们使用天桥过马路。",
+  "她洗碗时戴手套。",
+  "那只鸡停在树枝上。",
+  "小孩子喜欢在公园荡秋千。",
+  "竹筒鸡是砂拉越的传统食物。",
+  "妈妈为庆典做糕点。",
+  "水壶里的水已经沸腾了。",
+  "水从杯子里溢出来了。",
+  "我们在新年挂灯笼。",
+  "我从父母那里收到红包。",
+  "学生们在学校戏剧里演戏。",
+  "我们在超市买东西。",
+  "我们在新年看舞狮。",
+  "她用珠子做了一条手链。",
+  "卡达山族住在沙巴。",
+  "他在音乐表演中摇铃铛。",
+  "他在学校乐队中打铃鼓。",
+  "我在学校学吹口风琴。",
+  "他在表演中摇沙锤。",
+  "我们用彩纸做拼贴画。",
+  "爷爷用露兜树叶做席子。",
+  "妈妈在屋外晒衣服。",
+  "我把糕点浸泡在汤汁里。",
+  "露兜树叶用来做席子。",
+  "我们在纸上画格子。",
+  "这块布有漂亮的峇迪图案。",
+  "那位漫画家很有名。",
+  "乡村孩子喜欢在河里玩。",
+  "皇宫守卫站在入口处。",
+  "辉煌条纹是马来西亚国旗。",
+  "学生们涂马来西亚国旗。",
+  "我们用彩纸做拼贴画。",
+  "爸爸在公园为我们拍照。",
+  "微笑一下，我要拍照。",
+  "我们在周末登山。",
+  "我们在露天市场买菜。",
+  "这个瓶盖可以再循环。",
+  "他握笔的姿势很整齐。",
+  "他在泳池里敏捷地游泳。",
+  "农民在土里播种。",
+  "这些施肥的泥土很肥沃。",
+  "我们在菜园里种木薯。",
+  "这个袋子很环保。",
+  "这个捕蚊器很有效。",
+  "风扇快速地转动。",
+  "爸爸用鞋油擦亮鞋子。",
+  "我们用纸盘吃糕点。",
+  "我们用冰棒棍做手工。",
+  "这朵向日葵很大。",
+  "那棵树有刺。",
+  "枝叶茂盛的树提供遮阴的地方。",
+  "枯叶掉在地上。",
+  "稻农在稻田里种稻。",
+  "我们在学校举行互助合作。",
+  "我们在夜市卖二手物品。",
+  "我在书里阅读资料。",
+  "这个手工艺品是当地工匠做的。",
+  "我们去学校参观科学展览。",
+  "我们用花装饰篱笆。",
+  "这些物品是再循环的。",
+  "我们必须保护环境。",
+  "杀虫剂用来杀死昆虫。",
+  "空罐子可以再循环。",
+  "这个装饰品很漂亮。"
+    ];
+
+    const enSentences = [
+      "I wear socks before wearing my shoes.",
+  "We stroll in the park in the evening.",
+  "The breeze in the village is very cool.",
+  "We have sports practice in the school field.",
+  "My brother likes to jump on the bed.",
+  "Grandfather sits on the armchair.",
+  "He wipes his sweat with a towel.",
+  "Mother prepares a sandwich for my breakfast.",
+  "Drinking milk can strengthen bones.",
+  "Mother cooks choy sum for dinner.",
+  "I like to eat nasi lemak in the morning.",
+  "I drink fresh milk every day.",
+  "This guava is very sweet.",
+  "I eat egg bread for breakfast.",
+  "My brother colours the picture with crayons.",
+  "Mother washes her hands at the sink.",
+  "I brush my teeth with toothpaste.",
+  "The soap is placed in the soap dish.",
+  "This flower is very fragrant.",
+  "The doctor treats patients in the hospital.",
+  "The tree fell because of the strong wind.",
+  "I use a picture dictionary to look up words.",
+  "The students stand upright during the assembly.",
+  "We play badminton in the evening.",
+  "I like to eat snacks.",
+  "Mother fries potatoes for breakfast.",
+  "We use the pedestrian bridge to cross the road.",
+  "She wears gloves when washing the dishes.",
+  "The chicken is perched on the tree branch.",
+  "Children like to play on the swing in the park.",
+  "Chicken in bamboo is a traditional food from Sarawak.",
+  "Mother makes cakes for the celebration.",
+  "The water in the kettle is already boiling.",
+  "The water overflowed from the cup.",
+  "We hang lanterns during Chinese New Year.",
+  "I received a red packet from my parents.",
+  "The students act in the school drama.",
+  "We buy things at the supermarket.",
+  "We watch the lion dance during Chinese New Year.",
+  "She made a bracelet from beads.",
+  "The Kadazan people live in Sabah.",
+  "He plays the bell in the music performance.",
+  "He plays the tambourine in the school band.",
+  "I learn to play the melodica at school.",
+  "He plays the maracas in the performance.",
+  "We make a collage using coloured paper.",
+  "Grandfather makes a mat from screwpine leaves.",
+  "Mother dries the clothes outside the house.",
+  "I dip the cake into the gravy.",
+  "Screwpine leaves are used to make mats.",
+  "We draw a pond on the paper.",
+  "This cloth has a beautiful batik pattern.",
+  "That cartoonist is very famous.",
+  "The village child likes to play in the river.",
+  "The palace guard stands at the entrance.",
+  "Jalur Gemilang is the flag of Malaysia.",
+  "The students paint the Malaysian flag.",
+  "We make a collage from coloured paper.",
+  "Father takes photos of us in the park.",
+  "Smile a little, I want to take a photo.",
+  "We climb a mountain on the weekend.",
+  "We buy vegetables at the open-air market.",
+  "This bottle cap can be recycled.",
+  "His pencil grip is very neat.",
+  "He swims swiftly in the pool.",
+  "The farmer sows seeds in the soil.",
+  "This fertilised soil is very fertile.",
+  "We plant cassava in the garden.",
+  "This bag is eco-friendly.",
+  "This mosquito trap is very effective.",
+  "The fan spins quickly.",
+  "Father uses shoe polish to shine his shoes.",
+  "We eat cakes on paper plates.",
+  "We use ice cream sticks to make crafts.",
+  "This sunflower is very big.",
+  "That tree is thorny.",
+  "The leafy tree provides shade.",
+  "Dry leaves fall to the ground.",
+  "The paddy farmer plants paddy in the paddy field.",
+  "We hold a gotong-royong at school.",
+  "We sell used items at the flea market.",
+  "I read information in the book.",
+  "This handicraft is made by a local craftsman.",
+  "We visited the Science exhibition at school.",
+  "We decorate the fence with flowers.",
+  "These items are recycled.",
+  "We must protect the environment.",
+  "Insecticide is used to kill insects.",
+  "Empty tins can be recycled.",
+  "This decorative item is very beautiful."
+    ];
+
+    const msSentences = [
+      "Saya memakai stoking sebelum memakai kasut.",
+  "Kami bersiar-siar di taman pada waktu petang.",
+  "Angin di kampung sangat nyaman.",
+  "Kami mengadakan latihan sukan di padang sekolah.",
+  "Adik saya suka melompat di atas katil.",
+  "Atuk duduk di atas kerusi sandar.",
+  "Dia mengelap peluh dengan tuala.",
+  "Ibu menyediakan sandwic untuk sarapan saya.",
+  "Minum susu dapat menguatkan tulang.",
+  "Ibu memasak sawi untuk makan malam.",
+  "Saya suka makan nasi lemak pada waktu pagi.",
+  "Saya minum susu segar setiap hari.",
+  "Buah jambu ini sangat manis.",
+  "Saya makan roti telur untuk sarapan.",
+  "Adik mewarna gambar dengan krayon.",
+  "Ibu mencuci tangan di singki.",
+  "Saya memberus gigi dengan ubat gigi.",
+  "Sabun itu diletakkan di dalam bekas sabun.",
+  "Bunga ini berbau wangi.",
+  "Doktor merawat pesakit di hospital.",
+  "Pokok tumbang akibat angin kuat.",
+  "Saya menggunakan kamus bergambar untuk mencari perkataan.",
+  "Murid-murid tegak berdiri semasa perhimpunan.",
+  "Kami bermain badminton pada waktu petang.",
+  "Saya suka makan makanan ringan.",
+  "Ibu menggoreng kentang untuk sarapan.",
+  "Kami menggunakan jejantas untuk melintas jalan.",
+  "Dia memakai sarung tangan semasa mencuci pinggan.",
+  "Ayam itu bertenggek di atas ranting kayu.",
+  "Kanak-kanak suka bermain buaian di taman.",
+  "Ayam pansuh ialah makanan tradisional Sarawak.",
+  "Ibu membuat kuih penganan untuk perayaan.",
+  "Air di dalam cerek sudah mendidih.",
+  "Air itu melimpah keluar dari cawan.",
+  "Kami memasang tanglung semasa Tahun Baru Cina.",
+  "Saya menerima angpau daripada ibu bapa saya.",
+  "Murid-murid berlakon dalam drama sekolah.",
+  "Kami membeli barang di pasar raya.",
+  "Kami menonton tarian singa semasa Tahun Baru Cina.",
+  "Dia membuat gelang daripada manik.",
+  "Kaum Kadazan tinggal di Sabah.",
+  "Dia memainkan kerincing dalam persembahan muzik.",
+  "Dia memainkan tamborin dalam kumpulan muzik sekolah.",
+  "Saya belajar bermain pianika di sekolah.",
+  "Dia memainkan marakas dalam persembahan itu.",
+  "Kami membuat kolaj menggunakan kertas warna.",
+  "Atuk membuat tikar daripada daun mengkuang.",
+  "Ibu menjemur pakaian di luar rumah.",
+  "Saya celupkan kuih ke dalam kuah.",
+  "Daun mengkuang digunakan untuk membuat tikar.",
+  "Kami melukis kolam di atas kertas.",
+  "Kain ini mempunyai corak batik yang cantik.",
+  "Tokoh kartunis itu sangat terkenal.",
+  "Budak kampung itu suka bermain di sungai.",
+  "Pengawal istana itu berdiri di pintu masuk.",
+  "Jalur Gemilang ialah bendera Malaysia.",
+  "Murid-murid mengecat bendera Malaysia.",
+  "Kami membuat kolaj daripada kertas warna.",
+  "Ayah mengambil gambar kami di taman.",
+  "Senyum sedikit, saya mahu mengambil gambar.",
+  "Kami mendaki gunung pada hujung minggu.",
+  "Kami membeli sayur di pasar tamu.",
+  "Tudung botol ini boleh dikitar semula.",
+  "Genggaman penselnya sangat kemas.",
+  "Dia berenang tangkas di dalam kolam.",
+  "Petani menyemai biji benih di dalam tanah.",
+  "Tanah baja ini sangat subur.",
+  "Kami menanam ubi kayu di kebun.",
+  "Beg ini mesra alam.",
+  "Perangkap nyamuk ini sangat berkesan.",
+  "Kipas ini berputar dengan laju.",
+  "Ayah menggunakan pengilat kasut untuk menggilap kasut.",
+  "Kami makan kuih di atas piring kertas.",
+  "Kami menggunakan batang aiskrim untuk membuat kraf.",
+  "Bunga matahari ini sangat besar.",
+  "Pokok itu berduri.",
+  "Pokok rendang itu memberi tempat berlindung.",
+  "Daun kering jatuh ke tanah.",
+  "Pesawah menanam padi di sawah.",
+  "Kami mengadakan gotong-royong di sekolah.",
+  "Kami menjual barang terpakai di pasar lambak.",
+  "Saya membaca maklumat di dalam buku.",
+  "Kraf tangan ini dibuat oleh tukang tempatan.",
+  "Kami melawat pameran Sains di sekolah.",
+  "Kami menghias pagar dengan bunga.",
+  "Barang ini dikitar semula.",
+  "Kita harus menjaga alam sekitar.",
+  "Racun serangga digunakan untuk membunuh serangga.",
+  "Tin kosong boleh dikitar semula.",
+  "Barang hiasan ini sangat cantik."
+    ];
+
+    // ===== DOM & 语音 =====
+    let currentIndex = 0;
+    const questionDiv = document.getElementById('question');
+    const wordDiv = document.getElementById('word');
+    const meaningDiv = document.getElementById('meaning');
+
+    function setMeaning(text) { meaningDiv.textContent = text || ''; }
+
+    // 统一的朗读函数（默认：慢速 0.4、音高 0.6）
+    function speak(text, lang, preferNames = [], rate = 0.4, pitch = 0.6) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = rate;
+      u.pitch = pitch;
+
+      const trySpeak = () => {
+        const voices = speechSynthesis.getVoices() || [];
+        let candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith(lang.toLowerCase()));
+        // 如果没有马来语，回退印尼语
+        if (!candidates.length && lang.toLowerCase().startsWith('ms')) {
+          candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith('id'));
+          if (candidates.length) u.lang = 'id-ID';
+        }
+        for (const key of preferNames) {
+          const found = candidates.find(v => (v.name || '').toLowerCase().includes(key.toLowerCase()));
+          if (found) { u.voice = found; break; }
+        }
+        if (!u.voice && candidates.length) u.voice = candidates[0];
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      };
+
+      if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = trySpeak;
+      }
+      trySpeak();
+    }
+
+    // ===== 华文为主（按钮函数不再覆盖速率/音高）=====
+    function playChineseWord() {
+  const text = zh[currentIndex] || '';
+  const pinyin = py[currentIndex] || '';
+
+  setMeaning(pinyin);
+
+  speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+}
+
+    function showEnglish() {
+      const text = en[currentIndex] || '(待添加英文)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function playMalayWord(){
+
+const text = bm[currentIndex] || '';
+
+setMeaning('');
+
+speak(
+text,
+'ms-MY',
+['Microsoft','Malay','Bahasa']
+);
+
+}
+
+    function showChineseSentence() {
+      const text = zhSentences[currentIndex] || '(待添加华文造句)';
+      setMeaning(text);
+      speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+    }
+
+    function showEnglishSentence() {
+      const text = enSentences[currentIndex] || '(待添加英文句子)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function showMalaySentence() {
+      const text = msSentences[currentIndex] || '(待添加马来文句子)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Rizwan','Microsoft','Malay','Bahasa']);
+    }
+
+    function nextWord() {
+
+if(currentIndex < bm.length - 1){
+
+currentIndex++;
+
+updateQuestion();
+
+}
+
+}
+
+    function prevWord(){
+
+if(currentIndex > 0){
+
+currentIndex--;
+
+updateQuestion();
+
+}
+
+}
+
+    function updateQuestion() {
+  questionDiv.innerText = `题目 ${currentIndex + 1}`;
+  wordDiv.innerText = bm[currentIndex] || '—';
+  setMeaning('');
+}
+
+
+// ===== 搜索功能 =====
+function searchWord() {
+
+  const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+
+  if (!keyword) {
+    alert("请输入要搜索的词语");
+    return;
+  }
+
+
+  const index = bm.findIndex(word => 
+    word.toLowerCase() === keyword
+  );
+
+
+  if (index !== -1) {
+
+    currentIndex = index;
+    updateQuestion();
+
+  } else {
+
+    alert("没有找到：" + keyword);
+
+  }
+
+}
+
+function showChinese(){
+
+const text = zh[currentIndex] || '';
+
+setMeaning(text);
+
+speak(
+text,
+'zh-CN',
+['Xiaoyi','Microsoft']
+);
+
+}
+
+updateQuestion();
+  </script>
+</body>
+</html>

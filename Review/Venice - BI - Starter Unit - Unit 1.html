@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>听写练习（English）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background-color: #f0f0f0;
+    }
+    .container {
+      text-align: center; padding: 20px; background: #fff; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,.1); max-width: 720px; width: 92%;
+    }
+    .question { font-size: 28px; margin-bottom: 10px; }
+    .word { font-size: 34px; margin-bottom: 16px; }
+    .btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  margin-bottom: 14px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  font-size: 18px;
+  padding: 8px 12px;
+  width: 180px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.btn.search-btn {
+  background-color: #008cff;
+}
+
+    .btn {
+      font-size: 18px; padding: 10px 20px; border: none; border-radius: 8px;
+      background-color: #dc3545; color: #fff; cursor: pointer;
+    }
+    .btn.secondary { background-color: #6c757d; }
+    .btn.info { background-color: #dc3545; }
+    .btn.success { background-color: #dc3545; }
+    .btn.warning { background-color: #ffc107; color: #000; }
+    .meaning {
+      margin-top: 10px; font-size: 20px; background: #f8f9fa; border-radius: 8px;
+      padding: 12px; min-height: 60px; line-height: 1.6; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="search-box">
+  <input 
+  type="text" 
+  id="searchInput" 
+  placeholder=""
+  onkeydown="if(event.key === 'Enter') searchWord();"
+>
+
+  <button 
+    class="btn search-btn" 
+    onclick="searchWord()">
+    Search
+  </button>
+</div>
+    <div class="question" id="question">题目 1</div>
+    <div class="word" id="word">—</div>
+    
+    <div class="btns">
+      <!-- 华文优先 -->
+       <div class="btn-row">
+      <button class="btn" onclick="playEnglishWord()">🔊</button>
+      <button class="btn success" onclick="playMalayWord()">Bahasa Melayu</button>
+      <button class="btn info" onclick="showChinese()">华文</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn warning" onclick="showEnglishSentence()">Sentence</button>
+      <button class="btn warning" onclick="showMalaySentence()">Bina Ayat</button>      
+      <button class="btn warning" onclick="showChineseSentence()">造句</button>
+      
+      </div>
+
+      <div class="btn-row">
+      <button class="btn secondary" onclick="prevWord()">上一题</button>
+      <button class="btn secondary" onclick="nextWord()">下一题</button>
+      </div>
+
+</div>
+
+    <div class="meaning" id="meaning"></div>
+
+  </div>
+
+  <script>
+    // ====== 词库 ======
+    const zh = [
+      "滑板运动",
+  "摄影",
+  "聊天",
+  "扬声器",
+  "架子",
+  "字典",
+  "昂贵",
+  "受欢迎",
+  "货币",
+  "导游",
+  "绿色",
+  "地区",
+  "相反",
+  "想象",
+  "小木屋",
+  "乘客",
+  "可怕",
+  "放松",
+  "友好",
+  "现代",
+  "更便宜",
+  "地图",
+  "生意",
+  "城堡",
+  "工厂",
+  "人口"
+    ];
+
+    const py = [
+  "huá bǎn yùn dòng",
+  "shè yǐng",
+  "liáo tiān",
+  "yáng shēng qì",
+  "jià zi",
+  "zì diǎn",
+  "áng guì",
+  "shòu huān yíng",
+  "huò bì",
+  "dǎo yóu",
+  "lǜ sè",
+  "dì qū",
+  "xiāng fǎn",
+  "xiǎng xiàng",
+  "xiǎo mù wū",
+  "chéng kè",
+  "kě pà",
+  "fàng sōng",
+  "yǒu hǎo",
+  "xiàn dài",
+  "gèng pián yi",
+  "dì tú",
+  "shēng yi",
+  "chéng bǎo",
+  "gōng chǎng",
+  "rén kǒu"
+];
+
+    const en = [
+      "skateboarding",
+  "photography",
+  "chatting",
+  "speaker",
+  "shelf",
+  "dictionary",
+  "expensive",
+  "popular",
+  "currency",
+  "guide",
+  "green",
+  "district",
+  "opposite",
+  "imagine",
+  "cabin",
+  "passenger",
+  "horrible",
+  "relax",
+  "friendly",
+  "modern",
+  "cheaper",
+  "map",
+  "business",
+  "castle",
+  "factory",
+  "population"
+    ];
+
+    const bm = [
+"permainan papan luncur",
+  "fotografi",
+  "bersembang",
+  "pembesar suara",
+  "rak",
+  "kamus",
+  "mahal",
+  "popular",
+  "mata wang",
+  "pemandu pelancong",
+  "hijau",
+  "daerah",
+  "bertentangan",
+  "membayangkan",
+  "kabin",
+  "penumpang",
+  "mengerikan",
+  "berehat",
+  "mesra",
+  "moden",
+  "lebih murah",
+  "peta",
+  "perniagaan",
+  "istana",
+  "kilang",
+  "penduduk"
+];
+
+    const zhSentences = [
+      "他喜欢在公园玩滑板运动。",
+  "我的爱好是摄影。",
+  "我们在课室里聊天。",
+  "那个扬声器很大声。",
+  "书在架子上。",
+  "我用字典查生字。",
+  "这块手表很昂贵。",
+  "这首歌很受欢迎。",
+  "马来西亚使用的货币是令吉。",
+  "导游带我们参观这座城市。",
+  "叶子是绿色的。",
+  "我住在八打灵地区。",
+  "那家店在学校对面。",
+  "我想象自己在天空飞。",
+  "我们住在森林里的小木屋。",
+  "巴士上有很多乘客。",
+  "今天的天气很糟糕。",
+  "我听音乐来放松。",
+  "这里的人很友好。",
+  "这座建筑物很现代。",
+  "这个袋子比那个更便宜。",
+  "我用地来找路。",
+  "爸爸做小生意。",
+  "那座城堡又旧又大。",
+  "我的叔叔在工厂工作。",
+  "马来西亚的人口大约是三千万。"
+    ];
+
+    const enSentences = [
+      "He likes skateboarding at the park.",
+  "My hobby is photography.",
+  "We are chatting in the classroom.",
+  "The speaker is very loud.",
+  "The books are on the shelf.",
+  "I use a dictionary to look up new words.",
+  "This watch is very expensive.",
+  "This song is very popular.",
+  "Malaysia uses the ringgit as its currency.",
+  "The tour guide showed us around the city.",
+  "The leaves are green.",
+  "I live in the Petaling district.",
+  "The shop is opposite the school.",
+  "I imagine I am flying in the sky.",
+  "We stayed in a small cabin in the forest.",
+  "The bus has many passengers.",
+  "The weather today is horrible.",
+  "I relax by listening to music.",
+  "The people here are very friendly.",
+  "This building is very modern.",
+  "This bag is cheaper than that one.",
+  "I use a map to find the way.",
+  "My father runs a small business.",
+  "The castle is very old and big.",
+  "My uncle works in a factory.",
+  "The population of Malaysia is about thirty million."
+    ];
+
+    const msSentences = [
+      "Dia suka bermain papan luncur di taman.",
+  "Hobi saya ialah fotografi.",
+  "Kami bersembang di dalam bilik darjah.",
+  "Pembesar suara itu sangat kuat.",
+  "Buku-buku itu berada di atas rak.",
+  "Saya menggunakan kamus untuk mencari perkataan baharu.",
+  "Jam ini sangat mahal.",
+  "Lagu ini sangat popular.",
+  "Malaysia menggunakan ringgit sebagai mata wangnya.",
+  "Pemandu pelancong membawa kami melawat bandar ini.",
+  "Daun berwarna hijau.",
+  "Saya tinggal di daerah Petaling.",
+  "Kedai itu bertentangan dengan sekolah.",
+  "Saya membayangkan saya terbang di langit.",
+  "Kami menginap di sebuah kabin kecil di dalam hutan.",
+  "Bas itu mempunyai banyak penumpang.",
+  "Cuaca hari ini sangat mengerikan.",
+  "Saya berehat dengan mendengar muzik.",
+  "Orang di sini sangat mesra.",
+  "Bangunan ini sangat moden.",
+  "Beg ini lebih murah daripada beg itu.",
+  "Saya menggunakan peta untuk mencari jalan.",
+  "Ayah saya menjalankan perniagaan kecil.",
+  "Istana itu sangat lama dan besar.",
+  "Bapa saudara saya bekerja di sebuah kilang.",
+  "Penduduk Malaysia kira-kira tiga puluh juta orang."
+    ];
+
+    // ===== DOM & 语音 =====
+    let currentIndex = 0;
+    const questionDiv = document.getElementById('question');
+    const wordDiv = document.getElementById('word');
+    const meaningDiv = document.getElementById('meaning');
+
+    function setMeaning(text) { meaningDiv.textContent = text || ''; }
+
+    // 统一的朗读函数（默认：慢速 0.4、音高 0.6）
+    function speak(text, lang, preferNames = [], rate = 0.4, pitch = 0.6) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = rate;
+      u.pitch = pitch;
+
+      const trySpeak = () => {
+        const voices = speechSynthesis.getVoices() || [];
+        let candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith(lang.toLowerCase()));
+        // 如果没有马来语，回退印尼语
+        if (!candidates.length && lang.toLowerCase().startsWith('ms')) {
+          candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith('id'));
+          if (candidates.length) u.lang = 'id-ID';
+        }
+        for (const key of preferNames) {
+          const found = candidates.find(v => (v.name || '').toLowerCase().includes(key.toLowerCase()));
+          if (found) { u.voice = found; break; }
+        }
+        if (!u.voice && candidates.length) u.voice = candidates[0];
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      };
+
+      if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = trySpeak;
+      }
+      trySpeak();
+    }
+
+    // ===== 华文为主（按钮函数不再覆盖速率/音高）=====
+    function playChineseWord() {
+  const text = zh[currentIndex] || '';
+  const pinyin = py[currentIndex] || '';
+
+  setMeaning(pinyin);
+
+  speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+}
+
+    function showEnglish() {
+      const text = en[currentIndex] || '(待添加英文)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function playMalayWord(){
+
+const text = bm[currentIndex] || '';
+
+setMeaning(text);
+
+speak(
+text,
+'ms-MY',
+['Microsoft','Malay','Bahasa']
+);
+
+}
+
+    function showChineseSentence() {
+      const text = zhSentences[currentIndex] || '(待添加华文造句)';
+      setMeaning(text);
+      speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+    }
+
+    function showEnglishSentence() {
+      const text = enSentences[currentIndex] || '(待添加英文句子)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function showMalaySentence() {
+      const text = msSentences[currentIndex] || '(待添加马来文句子)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Rizwan','Microsoft','Malay','Bahasa']);
+    }
+
+    function nextWord() {
+
+if(currentIndex < bm.length - 1){
+
+currentIndex++;
+
+updateQuestion();
+
+}
+
+}
+
+    function prevWord(){
+
+if(currentIndex > 0){
+
+currentIndex--;
+
+updateQuestion();
+
+}
+
+}
+
+    function updateQuestion() {
+  questionDiv.innerText = `题目 ${currentIndex + 1}`;
+  wordDiv.innerText = en[currentIndex] || '—';
+  setMeaning('');
+}
+
+
+// ===== 搜索功能 =====
+function searchWord() {
+
+  const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+
+  if (!keyword) {
+    alert("请输入要搜索的词语");
+    return;
+  }
+
+
+  const index = en.findIndex(word => 
+word.toLowerCase() === keyword
+);
+
+
+  if (index !== -1) {
+
+    currentIndex = index;
+    updateQuestion();
+
+  } else {
+
+    alert("没有找到：" + keyword);
+
+  }
+
+}
+
+function showChinese(){
+
+const text = zh[currentIndex] || '';
+
+setMeaning(text);
+
+speak(
+text,
+'zh-CN',
+['Xiaoyi','Microsoft']
+);
+
+}
+
+function playEnglishWord(){
+
+const text = en[currentIndex] || '';
+
+setMeaning('');
+
+speak(
+text,
+'en-US',
+['Google','Microsoft','Natural']
+);
+
+}
+
+updateQuestion();
+  </script>
+</body>
+</html>

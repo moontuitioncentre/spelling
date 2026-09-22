@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>听写练习（Bahasa Melayu）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background-color: #f0f0f0;
+    }
+    .container {
+      text-align: center; padding: 20px; background: #fff; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,.1); max-width: 720px; width: 92%;
+    }
+    .question { font-size: 28px; margin-bottom: 10px; }
+    .word { font-size: 34px; margin-bottom: 16px; }
+    .btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  margin-bottom: 14px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  font-size: 18px;
+  padding: 8px 12px;
+  width: 180px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.btn.search-btn {
+  background-color: #008cff;
+}
+
+    .btn {
+      font-size: 18px; padding: 10px 20px; border: none; border-radius: 8px;
+      background-color: #dc3545; color: #fff; cursor: pointer;
+    }
+    .btn.secondary { background-color: #6c757d; }
+    .btn.info { background-color: #dc3545; }
+    .btn.success { background-color: #dc3545; }
+    .btn.warning { background-color: #ffc107; color: #000; }
+    .meaning {
+      margin-top: 10px; font-size: 20px; background: #f8f9fa; border-radius: 8px;
+      padding: 12px; min-height: 60px; line-height: 1.6; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="search-box">
+  <input 
+  type="text" 
+  id="searchInput" 
+  placeholder=""
+  onkeydown="if(event.key === 'Enter') searchWord();"
+>
+
+  <button 
+    class="btn search-btn" 
+    onclick="searchWord()">
+    Search
+  </button>
+</div>
+    <div class="question" id="question">题目 1</div>
+    <div class="word" id="word">—</div>
+    
+    <div class="btns">
+      <!-- 华文优先 -->
+       <div class="btn-row">
+      <button class="btn" onclick="playMalayWord()">🔊</button>
+      <button class="btn success" onclick="showEnglish()">English</button>
+      <button class="btn info" onclick="showChinese()">华文</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn warning" onclick="showMalaySentence()">Bina Ayat</button>
+      <button class="btn warning" onclick="showEnglishSentence()">Sentence</button>
+      <button class="btn warning" onclick="showChineseSentence()">造句</button>
+      
+      </div>
+
+      <div class="btn-row">
+      <button class="btn secondary" onclick="prevWord()">上一题</button>
+      <button class="btn secondary" onclick="nextWord()">下一题</button>
+      </div>
+
+    <div class="meaning" id="meaning"></div>
+  </div>
+
+  <script>
+    // ====== 词库 ======
+    const zh = [
+      "资料",
+  "逗留",
+  "历史性",
+  "参观",
+  "增加",
+  "集会",
+  "国旗",
+  "乡村",
+  "独立",
+  "木槿花",
+  "携带",
+  "谨慎",
+  "花费",
+  "储蓄罐",
+  "余额",
+  "储蓄",
+  "满",
+  "记录",
+  "计算",
+  "硬币",
+  "招待",
+  "兴趣",
+  "熟练",
+  "商人",
+  "畅销",
+  "顾客",
+  "床单",
+  "舒适",
+  "出售",
+  "杂货店",
+  "洗发水",
+  "价格",
+  "便宜",
+  "饼干",
+  "尝试",
+  "紧",
+  "打算",
+  "博物馆",
+  "文具",
+  "超市"
+    ];
+
+    const py = [
+  "zī liào",
+  "dòu liú",
+  "lì shǐ xìng",
+  "cān guān",
+  "zēng jiā",
+  "jí huì",
+  "guó qí",
+  "xiāng cūn",
+  "dú lì",
+  "mù jǐn huā",
+  "xié dài",
+  "jǐn shèn",
+  "huā fèi",
+  "chǔ xù guàn",
+  "yú é",
+  "chǔ xù",
+  "mǎn",
+  "jì lù",
+  "jì suàn",
+  "yìng bì",
+  "zhāo dài",
+  "xìng qù",
+  "shú liàn",
+  "shāng rén",
+  "chàng xiāo",
+  "gù kè",
+  "chuáng dān",
+  "shū shì",
+  "chū shòu",
+  "zá huò diàn",
+  "xǐ fà shuǐ",
+  "jià gé",
+  "pián yi",
+  "bǐng gān",
+  "cháng shì",
+  "jǐn",
+  "dǎ suàn",
+  "bó wù guǎn",
+  "wén jù",
+  "chāo shì"
+];
+
+    const en = [
+      "information",
+  "stop by",
+  "historical",
+  "visit",
+  "increase",
+  "assembly",
+  "flag",
+  "village",
+  "independent",
+  "hibiscus",
+  "provision",
+  "careful",
+  "spend",
+  "coin bank",
+  "balance",
+  "save money",
+  "full",
+  "record",
+  "calculate",
+  "coin",
+  "serve",
+  "interest",
+  "skilled",
+  "trader",
+  "sell well",
+  "customer",
+  "bedsheet",
+  "comfortable",
+  "for sale",
+  "grocery shop",
+  "shampoo",
+  "price",
+  "cheap",
+  "biscuit",
+  "try",
+  "tight",
+  "plan",
+  "museum",
+  "stationery",
+  "supermarket"
+    ];
+
+    const bm = [
+"maklumat",
+  "singgah",
+  "bersejarah",
+  "melawat",
+  "bertambah",
+  "perhimpunan",
+  "bendera",
+  "desa",
+  "merdeka",
+  "bunga raya",
+  "bekal",
+  "cermat",
+  "belanja",
+  "tabung",
+  "baki",
+  "menabung",
+  "penuh",
+  "mencatat",
+  "mengira",
+  "duit syiling",
+  "melayan",
+  "minat",
+  "mahir",
+  "peniaga",
+  "laris",
+  "pelanggan",
+  "cadar",
+  "selesa",
+  "dijual",
+  "kedai runcit",
+  "syampu",
+  "harga",
+  "murah",
+  "biskut",
+  "mencuba",
+  "ketat",
+  "bercadang",
+  "muzium",
+  "alat tulis",
+  "pasar raya"
+];
+
+    const zhSentences = [
+      "我在网上找到了很多有用的资料。",
+  "回家途中，我们在一家餐厅逗留了一会儿。",
+  "这是一座历史性的建筑物。",
+  "假期时，我们去博物馆参观。",
+  "今年的学生人数增加了。",
+  "星期一，我们在学校操场举行集会。",
+  "国旗在风中飘扬。",
+  "乡村的空气很清新。",
+  "马来西亚在1957年独立。",
+  "木槿花是马来西亚的国花。",
+  "妈妈为我准备了上学的便当。",
+  "我们花钱要谨慎。",
+  "姐姐每个月的花费很大。",
+  "我把零钱放进储蓄罐里。",
+  "这个月的余额不多了。",
+  "我们要从小养成储蓄的习惯。",
+  "巴士上坐满了乘客。",
+  "老师记录了我们每个人的分数。",
+  "我在计算这道数学题。",
+  "我收集了很多硬币。",
+  "服务员很有礼貌地招待客人。",
+  "我对画画很有兴趣。",
+  "他的游泳技术很熟练。",
+  "那位商人卖很多种商品。",
+  "这家店的糕点很畅销。",
+  "顾客对这家店的服务很满意。",
+  "妈妈换了新的床单。",
+  "这张床很舒适，我睡得很好。",
+  "这些水果是刚摘下来出售的。",
+  "我常常在杂货店买零食。",
+  "我用洗发水洗头。",
+  "这本书的价格很合理。",
+  "这里的衣服很便宜。",
+  "我喜欢吃巧克力饼干。",
+  "我想尝试做一道新菜。",
+  "这条裤子太紧了。",
+  "我打算周末去图书馆。",
+  "博物馆里有很多历史文物。",
+  "我在文具店买了铅笔和橡皮。",
+  "我们一家人去超市买东西。"
+    ];
+
+    const enSentences = [
+      "I found a lot of useful information on the Internet.",
+  "On the way home, we stopped by a restaurant for a while.",
+  "This is a historical building.",
+  "During the holidays, we visited the museum.",
+  "The number of students has increased this year.",
+  "On Monday, we hold an assembly in the school field.",
+  "The national flag is fluttering in the wind.",
+  "The air in the village is very fresh.",
+  "Malaysia became independent in 1957.",
+  "The hibiscus is the national flower of Malaysia.",
+  "Mother prepared a packed lunch for me to go to school.",
+  "We must be careful when spending money.",
+  "My sister's spending is very high every month.",
+  "I put the coins into the coin bank.",
+  "The balance this month is not much left.",
+  "We must save money from a young age.",
+  "The bus is full of passengers.",
+  "The teacher records every student's marks.",
+  "I am calculating this Maths question.",
+  "I collect a lot of coins.",
+  "The waiter served the guests politely.",
+  "I am very interested in drawing.",
+  "He is very skilled in swimming.",
+  "That trader sells many types of goods.",
+  "The cakes in this shop sell very well.",
+  "The customers are very satisfied with this shop's service.",
+  "Mother changed the bedsheet to a new one.",
+  "This bed is very comfortable, I sleep very well.",
+  "These fruits were just picked to be sold.",
+  "I always buy snacks at the grocery shop.",
+  "I use shampoo to wash my hair.",
+  "The price of this book is very reasonable.",
+  "The clothes here are very cheap.",
+  "I like to eat chocolate biscuits.",
+  "I want to try cooking a new dish.",
+  "This pair of trousers is too tight.",
+  "I plan to go to the library this weekend.",
+  "There are many historical items in the museum.",
+  "I bought a pencil and an eraser at the stationery shop.",
+  "My family goes shopping at the supermarket."
+    ];
+
+    const msSentences = [
+      "Saya mendapat banyak maklumat yang berguna di Internet.",
+  "Dalam perjalanan pulang, kami singgah di sebuah restoran sebentar.",
+  "Ini ialah sebuah bangunan yang bersejarah.",
+  "Pada masa cuti, kami melawat muzium.",
+  "Bilangan murid tahun ini bertambah.",
+  "Pada hari Isnin, kami mengadakan perhimpunan di padang sekolah.",
+  "Bendera negara berkibar ditiup angin.",
+  "Udara di desa sangat segar.",
+  "Malaysia mencapai kemerdekaan pada tahun 1957.",
+  "Bunga raya ialah bunga kebangsaan Malaysia.",
+  "Ibu menyediakan bekal untuk saya ke sekolah.",
+  "Kita harus cermat semasa berbelanja.",
+  "Belanja kakak sangat besar setiap bulan.",
+  "Saya memasukkan duit syiling ke dalam tabung.",
+  "Baki wang bulan ini tidak banyak lagi.",
+  "Kita harus menabung sejak kecil.",
+  "Bas itu penuh dengan penumpang.",
+  "Cikgu mencatat markah setiap murid.",
+  "Saya mengira soalan matematik ini.",
+  "Saya mengumpul banyak duit syiling.",
+  "Pelayan itu melayan tetamu dengan sopan.",
+  "Saya sangat minat dalam melukis.",
+  "Dia sangat mahir dalam berenang.",
+  "Peniaga itu menjual banyak jenis barang.",
+  "Kuih di kedai ini sangat laris.",
+  "Pelanggan sangat berpuas hati dengan perkhidmatan kedai ini.",
+  "Ibu menukar cadar yang baharu.",
+  "Katil ini sangat selesa, saya tidur dengan lena.",
+  "Buah-buahan ini baru dipetik untuk dijual.",
+  "Saya selalu membeli makanan ringan di kedai runcit.",
+  "Saya menggunakan syampu untuk mencuci rambut.",
+  "Harga buku ini sangat berpatutan.",
+  "Pakaian di sini sangat murah.",
+  "Saya suka makan biskut coklat.",
+  "Saya ingin mencuba memasak satu hidangan baharu.",
+  "Seluar ini terlalu ketat.",
+  "Saya bercadang pergi ke perpustakaan pada hujung minggu.",
+  "Terdapat banyak barang sejarah di dalam muzium.",
+  "Saya membeli pensel dan pemadam di kedai alat tulis.",
+  "Kami sekeluarga pergi membeli-belah di pasar raya."
+    ];
+
+    // ===== DOM & 语音 =====
+    let currentIndex = 0;
+    const questionDiv = document.getElementById('question');
+    const wordDiv = document.getElementById('word');
+    const meaningDiv = document.getElementById('meaning');
+
+    function setMeaning(text) { meaningDiv.textContent = text || ''; }
+
+    // 统一的朗读函数（默认：慢速 0.4、音高 0.6）
+    function speak(text, lang, preferNames = [], rate = 0.4, pitch = 0.6) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = rate;
+      u.pitch = pitch;
+
+      const trySpeak = () => {
+        const voices = speechSynthesis.getVoices() || [];
+        let candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith(lang.toLowerCase()));
+        // 如果没有马来语，回退印尼语
+        if (!candidates.length && lang.toLowerCase().startsWith('ms')) {
+          candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith('id'));
+          if (candidates.length) u.lang = 'id-ID';
+        }
+        for (const key of preferNames) {
+          const found = candidates.find(v => (v.name || '').toLowerCase().includes(key.toLowerCase()));
+          if (found) { u.voice = found; break; }
+        }
+        if (!u.voice && candidates.length) u.voice = candidates[0];
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      };
+
+      if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = trySpeak;
+      }
+      trySpeak();
+    }
+
+    // ===== 华文为主（按钮函数不再覆盖速率/音高）=====
+    function playChineseWord() {
+  const text = zh[currentIndex] || '';
+  const pinyin = py[currentIndex] || '';
+
+  setMeaning(pinyin);
+
+  speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+}
+
+    function showEnglish() {
+      const text = en[currentIndex] || '(待添加英文)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function playMalayWord(){
+
+const text = bm[currentIndex] || '';
+
+setMeaning('');
+
+speak(
+text,
+'ms-MY',
+['Microsoft','Malay','Bahasa']
+);
+
+}
+
+    function showChineseSentence() {
+      const text = zhSentences[currentIndex] || '(待添加华文造句)';
+      setMeaning(text);
+      speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+    }
+
+    function showEnglishSentence() {
+      const text = enSentences[currentIndex] || '(待添加英文句子)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function showMalaySentence() {
+      const text = msSentences[currentIndex] || '(待添加马来文句子)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Rizwan','Microsoft','Malay','Bahasa']);
+    }
+
+    function nextWord() {
+
+if(currentIndex < bm.length - 1){
+
+currentIndex++;
+
+updateQuestion();
+
+}
+
+}
+
+    function prevWord(){
+
+if(currentIndex > 0){
+
+currentIndex--;
+
+updateQuestion();
+
+}
+
+}
+
+    function updateQuestion() {
+  questionDiv.innerText = `题目 ${currentIndex + 1}`;
+  wordDiv.innerText = bm[currentIndex] || '—';
+  setMeaning('');
+}
+
+
+// ===== 搜索功能 =====
+function searchWord() {
+
+  const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+
+  if (!keyword) {
+    alert("请输入要搜索的词语");
+    return;
+  }
+
+
+  const index = bm.findIndex(word => 
+    word.toLowerCase() === keyword
+  );
+
+
+  if (index !== -1) {
+
+    currentIndex = index;
+    updateQuestion();
+
+  } else {
+
+    alert("没有找到：" + keyword);
+
+  }
+
+}
+
+function showChinese(){
+
+const text = zh[currentIndex] || '';
+
+setMeaning(text);
+
+speak(
+text,
+'zh-CN',
+['Xiaoyi','Microsoft']
+);
+
+}
+
+updateQuestion();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>听写练习（Bahasa Melayu）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background-color: #f0f0f0;
+    }
+    .container {
+      text-align: center; padding: 20px; background: #fff; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,.1); max-width: 720px; width: 92%;
+    }
+    .question { font-size: 28px; margin-bottom: 10px; }
+    .word { font-size: 34px; margin-bottom: 16px; }
+    .btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  margin-bottom: 14px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  font-size: 18px;
+  padding: 8px 12px;
+  width: 180px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.btn.search-btn {
+  background-color: #008cff;
+}
+
+    .btn {
+      font-size: 18px; padding: 10px 20px; border: none; border-radius: 8px;
+      background-color: #dc3545; color: #fff; cursor: pointer;
+    }
+    .btn.secondary { background-color: #6c757d; }
+    .btn.info { background-color: #dc3545; }
+    .btn.success { background-color: #dc3545; }
+    .btn.warning { background-color: #ffc107; color: #000; }
+    .meaning {
+      margin-top: 10px; font-size: 20px; background: #f8f9fa; border-radius: 8px;
+      padding: 12px; min-height: 60px; line-height: 1.6; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="search-box">
+  <input 
+  type="text" 
+  id="searchInput" 
+  placeholder=""
+  onkeydown="if(event.key === 'Enter') searchWord();"
+>
+
+  <button 
+    class="btn search-btn" 
+    onclick="searchWord()">
+    Search
+  </button>
+</div>
+    <div class="question" id="question">题目 1</div>
+    <div class="word" id="word">—</div>
+    
+    <div class="btns">
+      <!-- 华文优先 -->
+       <div class="btn-row">
+      <button class="btn" onclick="playMalayWord()">🔊</button>
+      <button class="btn success" onclick="showEnglish()">English</button>
+      <button class="btn info" onclick="showChinese()">华文</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn warning" onclick="showMalaySentence()">Bina Ayat</button>
+      <button class="btn warning" onclick="showEnglishSentence()">Sentence</button>
+      <button class="btn warning" onclick="showChineseSentence()">造句</button>
+      
+      </div>
+
+      <div class="btn-row">
+      <button class="btn secondary" onclick="prevWord()">上一题</button>
+      <button class="btn secondary" onclick="nextWord()">下一题</button>
+      </div>
+
+    <div class="meaning" id="meaning"></div>
+  </div>
+
+  <script>
+    // ====== 词库 ======
+    const zh = [
+      "热闹",
+  "庆典",
+  "迎接",
+  "沸腾",
+  "溢出",
+  "特别",
+  "感恩",
+  "椰丝",
+  "明亮",
+  "日历",
+  "表演",
+  "演戏",
+  "农民",
+  "缝纫",
+  "珠子",
+  "舞狮",
+  "超市",
+  "三角形",
+  "椭圆形",
+  "圆形",
+  "明天",
+  "选择",
+  "参观",
+  "制作",
+  "晒",
+  "干",
+  "浸泡",
+  "席子",
+  "图案",
+  "峇迪",
+  "展览",
+  "卡通",
+  "作品",
+  "出版",
+  "漫画",
+  "动画",
+  "播放",
+  "居住",
+  "皇宫",
+  "国王",
+  "涂漆",
+  "国旗",
+  "穿纱笼",
+  "戴宋谷帽",
+  "拼贴画",
+  "冠军",
+  "城市",
+  "聚集",
+  "前面",
+  "后面",
+  "海滩",
+  "亲密",
+  "微笑",
+  "攀登",
+  "大自然",
+  "美丽",
+  "高",
+  "山",
+  "度假",
+  "船",
+  "塑料",
+  "切",
+  "拿着",
+  "耐用",
+  "伤心",
+  "整齐",
+  "天气",
+  "绑",
+  "满",
+  "便宜",
+  "了不起",
+  "木薯",
+  "环保",
+  "喷出",
+  "轻",
+  "浇水",
+  "黄瓜",
+  "瘦",
+  "有趣",
+  "发声",
+  "有益",
+  "有创意",
+  "星期",
+  "材料",
+  "杂志",
+  "资料",
+  "刀片",
+  "先进",
+  "风",
+  "吸收",
+  "植物园",
+  "有刺",
+  "飞",
+  "度假",
+  "枯叶",
+  "仁当",
+  "食物",
+  "稻田",
+  "稻农",
+  "收割",
+  "教师办公室",
+  "互助合作",
+  "放置",
+  "禁止",
+  "再循环",
+  "巧克力",
+  "橙色",
+  "二手物品",
+  "参观",
+  "看见",
+  "河流",
+  "杨桃",
+  "盒装饮料",
+  "哭",
+  "肚子",
+  "痛",
+  "井",
+  "生菜",
+  "湖泊",
+  "肥沃"
+    ];
+
+    const py = [
+  "rè nao",
+  "qìng diǎn",
+  "yíng jiē",
+  "fèi téng",
+  "yì chū",
+  "tè bié",
+  "gǎn ēn",
+  "yē sī",
+  "míng liàng",
+  "rì lì",
+  "biǎo yǎn",
+  "yǎn xì",
+  "nóng mín",
+  "féng rèn",
+  "zhū zi",
+  "wǔ shī",
+  "chāo shì",
+  "sān jiǎo xíng",
+  "tuǒ yuán xíng",
+  "yuán xíng",
+  "míng tiān",
+  "xuǎn zé",
+  "cān guān",
+  "zhì zuò",
+  "shài",
+  "gān",
+  "jìn pào",
+  "xí zi",
+  "tú àn",
+  "bā dí",
+  "zhǎn lǎn",
+  "kǎ tōng",
+  "zuò pǐn",
+  "chū bǎn",
+  "màn huà",
+  "dòng huà",
+  "bō fàng",
+  "jū zhù",
+  "huáng gōng",
+  "guó wáng",
+  "tú qī",
+  "guó qí",
+  "chuān shā lóng",
+  "dài sòng gǔ mào",
+  "pīn tiē huà",
+  "guàn jūn",
+  "chéng shì",
+  "jù jí",
+  "qián miàn",
+  "hòu miàn",
+  "hǎi tān",
+  "qīn mì",
+  "wēi xiào",
+  "pān dēng",
+  "dà zì rán",
+  "měi lì",
+  "gāo",
+  "shān",
+  "dù jià",
+  "chuán",
+  "sù liào",
+  "qiē",
+  "ná zhe",
+  "nài yòng",
+  "shāng xīn",
+  "zhěng qí",
+  "tiān qì",
+  "bǎng",
+  "mǎn",
+  "pián yi",
+  "liǎo bu qǐ",
+  "mù shǔ",
+  "huán bǎo",
+  "pēn chū",
+  "qīng",
+  "jiāo shuǐ",
+  "huáng guā",
+  "shòu",
+  "yǒu qù",
+  "fā shēng",
+  "yǒu yì",
+  "yǒu chuàng yì",
+  "xīng qī",
+  "cái liào",
+  "zá zhì",
+  "zī liào",
+  "dāo piàn",
+  "xiān jìn",
+  "fēng",
+  "xī shōu",
+  "zhí wù yuán",
+  "yǒu cì",
+  "fēi",
+  "dù jià",
+  "kū yè",
+  "rén dāng",
+  "shí wù",
+  "dào tián",
+  "dào nóng",
+  "shōu gē",
+  "jiào shī bàn gōng shì",
+  "hù zhù hé zuò",
+  "fàng zhì",
+  "jìn zhǐ",
+  "zài xún huán",
+  "qiǎo kè lì",
+  "chéng sè",
+  "èr shǒu wù pǐn",
+  "cān guān",
+  "kàn jiàn",
+  "hé liú",
+  "yáng táo",
+  "hé zhuāng yǐn liào",
+  "kū",
+  "dù zi",
+  "tòng",
+  "jǐng",
+  "shēng cài",
+  "hú pō",
+  "féi wò"
+];
+
+    const en = [
+      "lively",
+  "celebration",
+  "welcome",
+  "boiling",
+  "overflow",
+  "special",
+  "grateful",
+  "coconut husk",
+  "bright",
+  "calendar",
+  "performance",
+  "act",
+  "farmer",
+  "sew",
+  "bead",
+  "lion dance",
+  "supermarket",
+  "triangle",
+  "oval",
+  "round",
+  "tomorrow",
+  "choose",
+  "visit",
+  "make",
+  "dry in the sun",
+  "dry",
+  "dip",
+  "mat",
+  "pattern",
+  "batik",
+  "exhibition",
+  "cartoon",
+  "artwork",
+  "published",
+  "comic",
+  "animation",
+  "broadcast",
+  "stay",
+  "palace",
+  "king",
+  "paint",
+  "flag",
+  "wear a sarong",
+  "wear a songkok",
+  "collage",
+  "champion",
+  "city",
+  "gather",
+  "front",
+  "back",
+  "beach",
+  "close",
+  "smile",
+  "climb",
+  "nature",
+  "beautiful",
+  "tall",
+  "mountain",
+  "holiday",
+  "boat",
+  "plastic",
+  "cut",
+  "hold",
+  "durable",
+  "sad",
+  "neat",
+  "weather",
+  "tie",
+  "full",
+  "cheap",
+  "awesome",
+  "cassava",
+  "eco-friendly",
+  "squirt",
+  "light",
+  "water",
+  "cucumber",
+  "thin",
+  "interesting",
+  "speak",
+  "beneficial",
+  "creative",
+  "week",
+  "material",
+  "magazine",
+  "information",
+  "blade",
+  "advanced",
+  "wind",
+  "absorb",
+  "botanical garden",
+  "thorny",
+  "fly",
+  "holiday",
+  "dry leaf",
+  "rendang",
+  "food",
+  "paddy field",
+  "paddy farmer",
+  "harvest",
+  "teachers' room",
+  "gotong-royong",
+  "put",
+  "forbid",
+  "recycled",
+  "chocolate",
+  "orange",
+  "used item",
+  "visit",
+  "spot",
+  "river",
+  "starfruit",
+  "box drink",
+  "cry",
+  "stomach",
+  "pain",
+  "well",
+  "raw vegetable",
+  "lake",
+  "fertile"
+    ];
+
+    const bm = [
+"meriah",
+  "perayaan",
+  "menyambut",
+  "mendidih",
+  "melimpah",
+  "istimewa",
+  "bersyukur",
+  "sabut",
+  "terang",
+  "kalendar",
+  "persembahan",
+  "berlakon",
+  "petani",
+  "menjahit",
+  "manik",
+  "tarian singa",
+  "pasar raya",
+  "segi tiga",
+  "bujur",
+  "bulat",
+  "esok",
+  "memilih",
+  "lawatan",
+  "membuat",
+  "jemur",
+  "kering",
+  "celupkan",
+  "tikar",
+  "corak",
+  "batik",
+  "pameran",
+  "kartun",
+  "karya",
+  "diterbitkan",
+  "komik",
+  "animasi",
+  "ditayangkan",
+  "tinggal",
+  "istana",
+  "raja",
+  "mengecat",
+  "bendera",
+  "bersamping",
+  "bersongkok",
+  "kolaj",
+  "johan",
+  "kota",
+  "berhimpun",
+  "hadapan",
+  "belakang",
+  "pantai",
+  "rapat",
+  "senyum",
+  "mendaki",
+  "alam",
+  "indah",
+  "tinggi",
+  "gunung",
+  "bercuti",
+  "bot",
+  "plastik",
+  "potong",
+  "memegang",
+  "tahan lama",
+  "susah hati",
+  "kemas",
+  "cuaca",
+  "ikat",
+  "penuh",
+  "murah",
+  "hebat",
+  "ubi kayu",
+  "mesra alam",
+  "memancut",
+  "ringan",
+  "menyiram",
+  "timun",
+  "kurus",
+  "menarik",
+  "bersuara",
+  "berfaedah",
+  "kreatif",
+  "minggu",
+  "bahan",
+  "majalah",
+  "maklumat",
+  "bilah",
+  "canggih",
+  "angin",
+  "menyerap",
+  "taman botani",
+  "berduri",
+  "terbang",
+  "bercuti",
+  "daun kering",
+  "rendang",
+  "makanan",
+  "sawah padi",
+  "pesawah",
+  "menuai",
+  "bilik guru",
+  "gotong-royong",
+  "meletakkan",
+  "melarang",
+  "dikitar semula",
+  "coklat",
+  "jingga",
+  "barang terpakai",
+  "melawat",
+  "ternampak",
+  "sungai",
+  "belimbing",
+  "minuman kotak",
+  "menangis",
+  "perut",
+  "sakit",
+  "telaga",
+  "ulam",
+  "tasik",
+  "subur"
+];
+
+    const zhSentences = [
+      "那个夜市很热闹。",
+  "开斋节是穆斯林重要的庆典。",
+  "我们微笑着迎接客人。",
+  "水壶里的水已经沸腾了。",
+  "水从杯子里溢出来了。",
+  "今天对我来说是特别的一天。",
+  "我很感恩有一个温暖的家庭。",
+  "妈妈用椰丝洗碗。",
+  "房间里的灯光很亮。",
+  "我在日历上标记重要的日期。",
+  "那个舞蹈表演很精彩。",
+  "学生们在学校戏剧里演戏。",
+  "农民在稻田里种稻。",
+  "妈妈为我缝衣服。",
+  "她用珠子做了一条手链。",
+  "新年时，我们看舞狮表演。",
+  "我们在超市买东西。",
+  "这张桌子是三角形的。",
+  "球是圆形的。",
+  "这一页是椭圆形的。",
+  "明天我要去学校。",
+  "我选择了这本故事书。",
+  "我们去博物馆参观。",
+  "爸爸用木头做了一个书架。",
+  "妈妈在屋外晒衣服。",
+  "衣服已经干了。",
+  "我把糕点浸泡在汤汁里。",
+  "我们坐在席子上。",
+  "这块布的图案很漂亮。",
+  "这件峇迪衣很漂亮。",
+  "我们去学校参观美术展览。",
+  "弟弟喜欢看卡通。",
+  "那幅画的作品很漂亮。",
+  "这本书在2020年出版。",
+  "我喜欢看漫画。",
+  "小孩子喜欢看动画。",
+  "那部电影在电影院播放。",
+  "我住在吉隆坡。",
+  "那座皇宫很大很漂亮。",
+  "那位国王公正地统治国家。",
+  "爸爸在涂漆墙壁。",
+  "马来西亚国旗是红、白、蓝和黄色的。",
+  "他在婚礼上穿纱笼。",
+  "他在那个仪式上戴宋谷帽。",
+  "我们用彩纸做拼贴画。",
+  "他在那场比赛中成为冠军。",
+  "那座城市很大很漂亮。",
+  "学生们在学校操场聚集。",
+  "那辆车在屋前。",
+  "我家在店的后面。",
+  "我们在海滩玩。",
+  "他坐得靠妈妈很近。",
+  "他对我微笑。",
+  "我们一起攀登那座山。",
+  "大自然很美丽。",
+  "这里的风景很美丽。",
+  "那棵树很高。",
+  "京那巴鲁山很高。",
+  "我们去浮罗交怡度假。",
+  "我们坐船去岛上。",
+  "这个塑料瓶可以再循环。",
+  "妈妈切菜准备煮饭。",
+  "他紧紧地拿着那个袋子。",
+  "这双鞋很耐用。",
+  "他因为考试失败而伤心。",
+  "这个房间很整齐。",
+  "今天的天气很好。",
+  "我绑我的鞋带。",
+  "那个篮子装满了水果。",
+  "这家店的东西很便宜。",
+  "他在数学方面很了不起。",
+  "我们在菜园里种木薯。",
+  "这个袋子很环保。",
+  "水从水管喷出来。",
+  "这个袋子很轻。",
+  "妈妈在浇花。",
+  "我喜欢吃黄瓜。",
+  "他很瘦，因为很少吃东西。",
+  "这个故事很有趣。",
+  "他大声地发声。",
+  "多吃蔬菜对身体有益。",
+  "他是一个有创意的人。",
+  "下个星期我们将去度假。",
+  "这个材料用来做蛋糕。",
+  "我在家看杂志。",
+  "我从这本书得到资料。",
+  "那把刀有锋利的刀片。",
+  "这台电话很先进。",
+  "风很大地吹。",
+  "泥土吸收雨水。",
+  "我们去植物园参观。",
+  "那棵树有刺。",
+  "那只鸟在天空飞得很高。",
+  "我们去金马仑高原度假。",
+  "枯叶掉在地上。",
+  "妈妈煮仁当鸡。",
+  "那个食物很好吃。",
+  "稻农在稻田里种稻。",
+  "稻农每天努力工作。",
+  "稻农在收割季节收割稻米。",
+  "老师在教师办公室。",
+  "我们在学校举行互助合作。",
+  "他把书放在桌上。",
+  "那个告示牌禁止我们吸烟。",
+  "这些物品是再循环的。",
+  "我喜欢吃巧克力。",
+  "橙色是我最喜欢的颜色。",
+  "我们在夜市卖二手物品。",
+  "我们去乡下探望奶奶。",
+  "我看见树上有一只鸟。",
+  "这条河流很干净。",
+  "这个杨桃很酸。",
+  "我在店里买盒装饮料。",
+  "弟弟因为跌倒而哭。",
+  "我的肚子痛。",
+  "他肚子痛。",
+  "井里的水很冷。",
+  "妈妈准备生菜给我们吃。",
+  "我们在湖泊游泳。",
+  "这里的土地很肥沃。"
+    ];
+
+    const enSentences = [
+      "The night market is very lively.",
+  "Hari Raya is an important celebration for Muslims.",
+  "We welcome the guests with a smile.",
+  "The water in the kettle is already boiling.",
+  "The water overflowed from the cup.",
+  "Today is a special day for me.",
+  "I am grateful to have a loving family.",
+  "Mother uses coconut husk to wash the dishes.",
+  "The light in the room is very bright.",
+  "I mark the important dates on the calendar.",
+  "The dance performance was very interesting.",
+  "The students act in the school drama.",
+  "The farmer plants paddy in the field.",
+  "Mother sews a shirt for me.",
+  "She made a bracelet from beads.",
+  "During Chinese New Year, we watch the lion dance.",
+  "We buy things at the supermarket.",
+  "This table is triangular.",
+  "The ball is round.",
+  "This page is oval.",
+  "Tomorrow I will go to school.",
+  "I chose this storybook.",
+  "We went for a visit to the museum.",
+  "Father made a bookshelf from wood.",
+  "Mother dries the clothes outside the house.",
+  "The clothes are already dry.",
+  "I dip the cake into the gravy.",
+  "We sit on the mat.",
+  "The pattern on this cloth is very beautiful.",
+  "This batik shirt is very beautiful.",
+  "We visited the art exhibition at school.",
+  "My brother likes to watch cartoons.",
+  "The artwork of that painting is very beautiful.",
+  "This book was published in 2020.",
+  "I like to read comics.",
+  "Children like to watch animation.",
+  "The movie was shown at the cinema.",
+  "I live in Kuala Lumpur.",
+  "The palace is very big and beautiful.",
+  "The king ruled the country fairly.",
+  "Father is painting the wall.",
+  "The Malaysian flag is red, white, blue and yellow.",
+  "He wears a sarong during the wedding.",
+  "He wears a songkok during the ceremony.",
+  "We make a collage from coloured paper.",
+  "He became the champion in that competition.",
+  "The city is very big and beautiful.",
+  "The students gather in the school field.",
+  "The car is in front of the house.",
+  "My house is behind the shop.",
+  "We play at the beach.",
+  "He sits close to his mother.",
+  "He smiled at me.",
+  "We climbed the mountain together.",
+  "Nature is very beautiful.",
+  "The scenery here is very beautiful.",
+  "That tree is very tall.",
+  "Mount Kinabalu is very tall.",
+  "We went to Langkawi for a holiday.",
+  "We took a boat to the island.",
+  "This plastic bottle can be recycled.",
+  "Mother cuts the vegetables to cook.",
+  "He holds the bag tightly.",
+  "This pair of shoes is durable.",
+  "He is sad because he failed the exam.",
+  "This room is very neat.",
+  "The weather today is very good.",
+  "I tie my shoelaces.",
+  "The basket is full of fruits.",
+  "The things in this shop are very cheap.",
+  "He is awesome at Mathematics.",
+  "We plant cassava in the garden.",
+  "This bag is eco-friendly.",
+  "Water squirts from the pipe.",
+  "This bag is very light.",
+  "Mother is watering the flowers.",
+  "I like to eat cucumber.",
+  "He is very thin because he seldom eats.",
+  "This story is very interesting.",
+  "He speaks loudly.",
+  "Eating vegetables is very beneficial to the body.",
+  "He is a creative person.",
+  "We will go on holiday next week.",
+  "This material is used to make a cake.",
+  "I read a magazine at home.",
+  "I got the information from this book.",
+  "The knife has a sharp blade.",
+  "This phone is very advanced.",
+  "The wind is blowing strongly.",
+  "The soil absorbs the rainwater.",
+  "We visited the botanical garden.",
+  "That tree is thorny.",
+  "The bird flies high in the sky.",
+  "We went to Cameron Highlands for a holiday.",
+  "Dry leaves fall to the ground.",
+  "Mother cooks rendang chicken.",
+  "The food is very delicious.",
+  "The paddy farmer plants paddy in the paddy field.",
+  "The paddy farmer works hard every day.",
+  "The paddy farmer harvests the paddy during the harvest season.",
+  "The teacher is in the teachers' room.",
+  "We held a gotong-royong at school.",
+  "He put the book on the table.",
+  "The signboard forbids us from smoking.",
+  "These items are recycled.",
+  "I like to eat chocolate.",
+  "Orange is my favourite colour.",
+  "We sell used items at the flea market.",
+  "We visited grandmother in the village.",
+  "I spotted a bird on the tree.",
+  "This river is very clean.",
+  "This starfruit is very sour.",
+  "I bought a box drink at the shop.",
+  "My brother cried because he fell down.",
+  "My stomach hurts.",
+  "He has a stomachache.",
+  "The water in the well is very cold.",
+  "Mother serves raw vegetables for the meal.",
+  "We swam in the lake.",
+  "The soil here is very fertile."
+    ];
+
+    const msSentences = [
+      "Pasar malam itu sangat meriah.",
+  "Hari Raya ialah perayaan yang penting bagi orang Islam.",
+  "Kami menyambut tetamu dengan senyum.",
+  "Air di dalam cerek sudah mendidih.",
+  "Air itu melimpah keluar dari cawan.",
+  "Hari ini ialah hari yang istimewa bagi saya.",
+  "Saya bersyukur kerana mempunyai keluarga yang penyayang.",
+  "Ibu menggunakan sabut untuk mencuci pinggan.",
+  "Lampu di dalam bilik sangat terang.",
+  "Saya menandakan tarikh penting pada kalendar.",
+  "Persembahan tarian itu sangat menarik.",
+  "Murid-murid berlakon dalam drama sekolah.",
+  "Petani menanam padi di sawah.",
+  "Ibu menjahit baju untuk saya.",
+  "Dia membuat gelang daripada manik.",
+  "Semasa Tahun Baru Cina, kami menonton tarian singa.",
+  "Kami membeli barang di pasar raya.",
+  "Meja ini berbentuk segi tiga.",
+  "Bola itu berbentuk bulat.",
+  "Muka surat ini berbentuk bujur.",
+  "Esok saya akan pergi ke sekolah.",
+  "Saya memilih buku cerita ini.",
+  "Kami mengadakan lawatan ke muzium.",
+  "Ayah membuat rak buku daripada kayu.",
+  "Ibu menjemur pakaian di luar rumah.",
+  "Pakaian itu sudah kering.",
+  "Saya celupkan kuih ke dalam kuah.",
+  "Kami duduk di atas tikar.",
+  "Corak kain ini sangat cantik.",
+  "Baju batik ini sangat cantik.",
+  "Kami melawat pameran seni di sekolah.",
+  "Adik saya suka menonton kartun.",
+  "Karya lukisan itu sangat cantik.",
+  "Buku ini diterbitkan pada tahun 2020.",
+  "Saya suka membaca komik.",
+  "Kanak-kanak suka menonton animasi.",
+  "Filem itu ditayangkan di pawagam.",
+  "Saya tinggal di Kuala Lumpur.",
+  "Istana itu sangat besar dan cantik.",
+  "Raja itu memerintah dengan adil.",
+  "Ayah mengecat dinding rumah.",
+  "Bendera Malaysia berwarna merah, putih, biru dan kuning.",
+  "Dia bersamping semasa majlis perkahwinan.",
+  "Dia bersongkok semasa majlis itu.",
+  "Kami membuat kolaj daripada kertas warna.",
+  "Dia menjadi johan dalam pertandingan itu.",
+  "Kota itu sangat besar dan cantik.",
+  "Murid-murid berhimpun di padang sekolah.",
+  "Kereta itu berada di hadapan rumah.",
+  "Rumah saya di belakang kedai.",
+  "Kami bermain di pantai.",
+  "Dia duduk rapat dengan ibu.",
+  "Dia senyum kepada saya.",
+  "Kami mendaki gunung itu bersama-sama.",
+  "Alam semula jadi sangat indah.",
+  "Pemandangan di sini sangat indah.",
+  "Pokok itu sangat tinggi.",
+  "Gunung Kinabalu sangat tinggi.",
+  "Kami bercuti ke Pulau Langkawi.",
+  "Kami menaiki bot untuk ke pulau.",
+  "Botol plastik ini boleh dikitar semula.",
+  "Ibu memotong sayur untuk memasak.",
+  "Dia memegang beg itu dengan kuat.",
+  "Kasut ini tahan lama.",
+  "Dia susah hati kerana gagal dalam ujian.",
+  "Bilik ini sangat kemas.",
+  "Cuaca hari ini sangat baik.",
+  "Saya mengikat tali kasut saya.",
+  "Bakul itu penuh dengan buah.",
+  "Barang di kedai ini sangat murah.",
+  "Dia sangat hebat dalam matematik.",
+  "Kami menanam ubi kayu di kebun.",
+  "Beg ini mesra alam.",
+  "Air memancut dari paip.",
+  "Beg ini sangat ringan.",
+  "Ibu menyiram pokok bunga.",
+  "Saya suka makan timun.",
+  "Dia sangat kurus kerana jarang makan.",
+  "Cerita ini sangat menarik.",
+  "Dia bersuara dengan lantang.",
+  "Makan sayur banyak berfaedah untuk badan.",
+  "Dia seorang yang kreatif.",
+  "Minggu depan kami akan bercuti.",
+  "Bahan ini digunakan untuk membuat kek.",
+  "Saya membaca majalah di rumah.",
+  "Saya mendapat maklumat daripada buku ini.",
+  "Pisau itu mempunyai bilah yang tajam.",
+  "Telefon ini sangat canggih.",
+  "Angin bertiup dengan kuat.",
+  "Tanah menyerap air hujan.",
+  "Kami melawat taman botani.",
+  "Pokok itu berduri.",
+  "Burung itu terbang tinggi di langit.",
+  "Kami bercuti ke Cameron Highlands.",
+  "Daun kering jatuh ke tanah.",
+  "Ibu memasak rendang ayam.",
+  "Makanan itu sangat sedap.",
+  "Pesawah menanam padi di sawah padi.",
+  "Pesawah bekerja keras setiap hari.",
+  "Pesawah menuai padi pada musim menuai.",
+  "Cikgu berada di bilik guru.",
+  "Kami mengadakan gotong-royong di sekolah.",
+  "Dia meletakkan buku di atas meja.",
+  "Papan tanda itu melarang kami merokok.",
+  "Barang ini dikitar semula.",
+  "Saya suka makan coklat.",
+  "Warna jingga ialah warna kegemaran saya.",
+  "Kami menjual barang terpakai di pasar lambak.",
+  "Kami melawat nenek di kampung.",
+  "Saya ternampak seekor burung di pokok.",
+  "Sungai ini sangat bersih.",
+  "Belimbing ini sangat masam.",
+  "Saya membeli minuman kotak di kedai.",
+  "Adik menangis kerana jatuh.",
+  "Perut saya sakit.",
+  "Dia sakit perut.",
+  "Air di dalam telaga itu sangat sejuk.",
+  "Ibu menghidangkan ulam untuk makan.",
+  "Kami berenang di tasik.",
+  "Tanah di sini sangat subur."
+    ];
+
+    // ===== DOM & 语音 =====
+    let currentIndex = 0;
+    const questionDiv = document.getElementById('question');
+    const wordDiv = document.getElementById('word');
+    const meaningDiv = document.getElementById('meaning');
+
+    function setMeaning(text) { meaningDiv.textContent = text || ''; }
+
+    // 统一的朗读函数（默认：慢速 0.4、音高 0.6）
+    function speak(text, lang, preferNames = [], rate = 0.4, pitch = 0.6) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = rate;
+      u.pitch = pitch;
+
+      const trySpeak = () => {
+        const voices = speechSynthesis.getVoices() || [];
+        let candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith(lang.toLowerCase()));
+        // 如果没有马来语，回退印尼语
+        if (!candidates.length && lang.toLowerCase().startsWith('ms')) {
+          candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith('id'));
+          if (candidates.length) u.lang = 'id-ID';
+        }
+        for (const key of preferNames) {
+          const found = candidates.find(v => (v.name || '').toLowerCase().includes(key.toLowerCase()));
+          if (found) { u.voice = found; break; }
+        }
+        if (!u.voice && candidates.length) u.voice = candidates[0];
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      };
+
+      if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = trySpeak;
+      }
+      trySpeak();
+    }
+
+    // ===== 华文为主（按钮函数不再覆盖速率/音高）=====
+    function playChineseWord() {
+  const text = zh[currentIndex] || '';
+  const pinyin = py[currentIndex] || '';
+
+  setMeaning(pinyin);
+
+  speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+}
+
+    function showEnglish() {
+      const text = en[currentIndex] || '(待添加英文)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function playMalayWord(){
+
+const text = bm[currentIndex] || '';
+
+setMeaning('');
+
+speak(
+text,
+'ms-MY',
+['Microsoft','Malay','Bahasa']
+);
+
+}
+
+    function showChineseSentence() {
+      const text = zhSentences[currentIndex] || '(待添加华文造句)';
+      setMeaning(text);
+      speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+    }
+
+    function showEnglishSentence() {
+      const text = enSentences[currentIndex] || '(待添加英文句子)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function showMalaySentence() {
+      const text = msSentences[currentIndex] || '(待添加马来文句子)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Rizwan','Microsoft','Malay','Bahasa']);
+    }
+
+    function nextWord() {
+
+if(currentIndex < bm.length - 1){
+
+currentIndex++;
+
+updateQuestion();
+
+}
+
+}
+
+    function prevWord(){
+
+if(currentIndex > 0){
+
+currentIndex--;
+
+updateQuestion();
+
+}
+
+}
+
+    function updateQuestion() {
+  questionDiv.innerText = `题目 ${currentIndex + 1}`;
+  wordDiv.innerText = bm[currentIndex] || '—';
+  setMeaning('');
+}
+
+
+// ===== 搜索功能 =====
+function searchWord() {
+
+  const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+
+  if (!keyword) {
+    alert("请输入要搜索的词语");
+    return;
+  }
+
+
+  const index = bm.findIndex(word => 
+    word.toLowerCase() === keyword
+  );
+
+
+  if (index !== -1) {
+
+    currentIndex = index;
+    updateQuestion();
+
+  } else {
+
+    alert("没有找到：" + keyword);
+
+  }
+
+}
+
+function showChinese(){
+
+const text = zh[currentIndex] || '';
+
+setMeaning(text);
+
+speak(
+text,
+'zh-CN',
+['Xiaoyi','Microsoft']
+);
+
+}
+
+updateQuestion();
+  </script>
+</body>
+</html>

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>听写练习（华文优先）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background-color: #f0f0f0;
+    }
+    .container {
+      text-align: center; padding: 20px; background: #fff; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,.1); max-width: 720px; width: 92%;
+    }
+    .question { font-size: 28px; margin-bottom: 10px; }
+    .word { font-size: 34px; margin-bottom: 16px; }
+    .btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  margin-bottom: 14px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  font-size: 18px;
+  padding: 8px 12px;
+  width: 180px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.btn.search-btn {
+  background-color: #008cff;
+}
+
+.pinyin {
+  font-size: 18px;
+  color: #555;
+  margin-top: -5px;
+  margin-bottom: 25px;
+  font-style: italic;
+}
+
+    .btn {
+      font-size: 18px; padding: 10px 20px; border: none; border-radius: 8px;
+      background-color: #dc3545; color: #fff; cursor: pointer;
+    }
+    .btn.secondary { background-color: #6c757d; }
+    .btn.info { background-color: #dc3545; }
+    .btn.success { background-color: #dc3545; }
+    .btn.warning { background-color: #ffc107; color: #000; }
+    .meaning {
+      margin-top: 10px; font-size: 20px; background: #f8f9fa; border-radius: 8px;
+      padding: 12px; min-height: 60px; line-height: 1.6; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="search-box">
+  <input 
+    type="text" 
+    id="searchInput" 
+    placeholder=""
+  >
+
+  <button 
+    class="btn search-btn" 
+    onclick="searchWord()">
+    Search
+  </button>
+</div>
+    <div class="question" id="question">题目 1</div>
+    <div class="word" id="word">—</div>
+    
+    <div class="btns">
+      <!-- 华文优先 -->
+       <div class="btn-row">
+      <button class="btn" onclick="playChineseWord()">朗读</button>
+      <button class="btn success" onclick="showEnglish()">English</button>
+      <button class="btn info" onclick="showMalay()">BM</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn warning" onclick="showChineseSentence()">造句</button>
+      <button class="btn warning" onclick="showEnglishSentence()">Sentence</button>
+      <button class="btn warning" onclick="showMalaySentence()">Bina Ayat</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn secondary" onclick="prevWord()">上一题</button>
+      <button class="btn secondary" onclick="nextWord()">下一题</button>
+      </div>
+
+    <div class="meaning" id="meaning"></div>
+  </div>
+
+  <script>
+    // ====== 词库 ======
+    const zh = [
+      "玩耍",
+  "大力士",
+  "穿",
+  "红花",
+  "对不起",
+  "应该",
+  "气球",
+  "生气",
+  "脸",
+  "美丽",
+  "搭窝",
+  "停电",
+  "知道",
+  "升",
+  "关心",
+  "踢",
+  "哪里",
+  "什么",
+  "方法",
+  "兄弟",
+  "问题",
+  "等",
+  "男女",
+  "农田",
+  "果园",
+  "平安",
+  "彩虹",
+  "害怕",
+  "路灯",
+  "安全"
+    ];
+
+    const py = [
+  "wán shuǎ",
+  "dà lì shì",
+  "chuān",
+  "hóng huā",
+  "duì bu qǐ",
+  "yīng gāi",
+  "qì qiú",
+  "shēng qì",
+  "liǎn",
+  "měi lì",
+  "dā wō",
+  "tíng diàn",
+  "zhī dào",
+  "shēng",
+  "guān xīn",
+  "tī",
+  "nǎ lǐ",
+  "shén me",
+  "fāng fǎ",
+  "xiōng dì",
+  "wèn tí",
+  "děng",
+  "nán nǚ",
+  "nóng tián",
+  "guǒ yuán",
+  "píng ān",
+  "cǎi hóng",
+  "hài pà",
+  "lù dēng",
+  "ān quán"
+];
+
+    const en = [
+      "play",
+  "strongman",
+  "wear",
+  "red flower",
+  "sorry",
+  "should",
+  "balloon",
+  "angry",
+  "face",
+  "beautiful",
+  "build a nest",
+  "power outage",
+  "know",
+  "rise",
+  "care",
+  "kick",
+  "where",
+  "what",
+  "method",
+  "brothers",
+  "question",
+  "wait",
+  "male and female",
+  "farm",
+  "orchard",
+  "safe",
+  "rainbow",
+  "afraid",
+  "street lamp",
+  "safe"
+    ];
+
+    const ms = [
+      "bermain",
+  "orang kuat",
+  "memakai",
+  "bunga merah",
+  "maaf",
+  "sepatutnya",
+  "belon",
+  "marah",
+  "muka",
+  "cantik",
+  "membuat sarang",
+  "gangguan elektrik",
+  "tahu",
+  "naik",
+  "mengambil berat",
+  "menendang",
+  "di mana",
+  "apa",
+  "cara",
+  "adik-beradik",
+  "soalan",
+  "tunggu",
+  "lelaki dan perempuan",
+  "sawah",
+  "kebun buah-buahan",
+  "selamat",
+  "pelangi",
+  "takut",
+  "lampu jalan",
+  "selamat"
+    ];
+
+    const zhSentences = [
+      "弟弟在公园里玩耍。",
+  "那个大力士能举起很重的东西。",
+  "我今天穿了一件新衣服。",
+  "花园里开了一朵红花。",
+  "对不起，我迟到了。",
+  "我们应该尊敬父母。",
+  "弟弟在玩气球。",
+  "妈妈生气我太晚回家。",
+  "她的脸上带着笑容。",
+  "这朵花很美丽。",
+  "小鸟在树上搭窝。",
+  "今天停电了，我们不能看电视。",
+  "我知道这个问题的答案。",
+  "国旗在风中升起。",
+  "妈妈很关心我的健康。",
+  "他在踢足球。",
+  "你在哪里？",
+  "这是什么？",
+  "这是一个好方法。",
+  "我和兄弟一起玩。",
+  "我能回答这个问题。",
+  "请在门口等我。",
+  "男女都应该受到平等的对待。",
+  "农民在农田里种菜。",
+  "爷爷的果园里种了很多水果。",
+  "祝你们一路平安。",
+  "雨后的天空出现了一道彩虹。",
+  "我很害怕打雷。",
+  "晚上，路灯照亮了街道。",
+  "过马路时要注意安全。"
+    ];
+
+    const enSentences = [
+      "My brother plays in the park.",
+  "That strongman can lift very heavy things.",
+  "I am wearing a new shirt today.",
+  "A red flower is blooming in the garden.",
+  "Sorry, I am late.",
+  "We should respect our parents.",
+  "My brother is playing with a balloon.",
+  "Mother is angry because I came home too late.",
+  "Her face has a smile on it.",
+  "This flower is very beautiful.",
+  "The bird builds a nest on the tree.",
+  "There is a power outage today, we cannot watch television.",
+  "I know the answer to this question.",
+  "The national flag rises in the wind.",
+  "Mother cares a lot about my health.",
+  "He is kicking the football.",
+  "Where are you?",
+  "What is this?",
+  "This is a good method.",
+  "I play with my brothers.",
+  "I can answer this question.",
+  "Please wait for me at the door.",
+  "Males and females should be treated fairly.",
+  "The farmer plants vegetables on the farm.",
+  "Grandfather's orchard grows many fruits.",
+  "May you have a safe journey.",
+  "After the rain, a rainbow appeared in the sky.",
+  "I am very afraid of thunder.",
+  "At night, the street lamps light up the road.",
+  "Be careful when crossing the road."
+    ];
+
+    const msSentences = [
+      "Adik bermain di taman.",
+  "Orang kuat itu boleh mengangkat barang yang berat.",
+  "Saya memakai baju baharu hari ini.",
+  "Sekuntum bunga merah tumbuh di taman.",
+  "Maaf, saya lambat.",
+  "Kita sepatutnya menghormati ibu bapa.",
+  "Adik bermain belon.",
+  "Ibu marah kerana saya balik terlalu lewat.",
+  "Mukanya penuh dengan senyuman.",
+  "Bunga ini sangat cantik.",
+  "Burung membuat sarang di atas pokok.",
+  "Hari ini berlaku gangguan elektrik, kami tidak boleh menonton televisyen.",
+  "Saya tahu jawapan kepada soalan ini.",
+  "Bendera negara naik di angin.",
+  "Ibu sangat mengambil berat tentang kesihatan saya.",
+  "Dia menendang bola sepak.",
+  "Di mana kamu?",
+  "Apa ini?",
+  "Ini ialah satu cara yang baik.",
+  "Saya bermain dengan adik-beradik saya.",
+  "Saya boleh menjawab soalan ini.",
+  "Sila tunggu saya di pintu.",
+  "Lelaki dan perempuan harus dilayan dengan adil.",
+  "Petani menanam sayur di sawah.",
+  "Kebun buah-buahan atuk menanam banyak buah.",
+  "Semoga kamu selamat dalam perjalanan.",
+  "Selepas hujan, satu pelangi muncul di langit.",
+  "Saya sangat takut akan guruh.",
+  "Pada waktu malam, lampu jalan menerangi jalan.",
+  "Berhati-hati semasa melintas jalan."
+    ];
+
+    // ===== DOM & 语音 =====
+    let currentIndex = 0;
+    const questionDiv = document.getElementById('question');
+    const wordDiv = document.getElementById('word');
+    const pinyinDiv = document.getElementById('pinyin');
+    const meaningDiv = document.getElementById('meaning');
+
+    function setMeaning(text) { meaningDiv.textContent = text || ''; }
+
+    // 统一的朗读函数（默认：慢速 0.4、音高 0.6）
+    function speak(text, lang, preferNames = [], rate = 0.4, pitch = 0.6) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = rate;
+      u.pitch = pitch;
+
+      const trySpeak = () => {
+        const voices = speechSynthesis.getVoices() || [];
+        let candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith(lang.toLowerCase()));
+        // 如果没有马来语，回退印尼语
+        if (!candidates.length && lang.toLowerCase().startsWith('ms')) {
+          candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith('id'));
+          if (candidates.length) u.lang = 'id-ID';
+        }
+        for (const key of preferNames) {
+          const found = candidates.find(v => (v.name || '').toLowerCase().includes(key.toLowerCase()));
+          if (found) { u.voice = found; break; }
+        }
+        if (!u.voice && candidates.length) u.voice = candidates[0];
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      };
+
+      if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = trySpeak;
+      }
+      trySpeak();
+    }
+
+    // ===== 华文为主（按钮函数不再覆盖速率/音高）=====
+    function playChineseWord() {
+  const text = zh[currentIndex] || '';
+  const pinyin = py[currentIndex] || '';
+
+  setMeaning(pinyin);
+
+  speak(text, 'zh-CN', ['Xiaoyi','Microsoft','male']);
+}
+
+    function showEnglish() {
+      const text = en[currentIndex] || '(待添加英文)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function showMalay() {
+      const text = ms[currentIndex] || '(待添加马来文)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Malay','Bahasa','Microsoft']);
+    }
+
+    function showChineseSentence() {
+      const text = zhSentences[currentIndex] || '(待添加华文造句)';
+      setMeaning(text);
+      speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+    }
+
+    function showEnglishSentence() {
+      const text = enSentences[currentIndex] || '(待添加英文句子)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft']);
+    }
+
+    function showMalaySentence() {
+      const text = msSentences[currentIndex] || '(待添加马来文句子)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Malay','Bahasa','Microsoft']);
+    }
+
+    function nextWord() {
+      if (currentIndex < zh.length - 1) {
+        currentIndex++;
+        updateQuestion();
+      }
+    }
+
+    function prevWord() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateQuestion();
+      }
+    }
+
+    function updateQuestion() {
+  questionDiv.innerText = `题目 ${currentIndex + 1}`;
+  wordDiv.innerText = zh[currentIndex] || '—';
+  setMeaning('');
+}
+
+
+// ===== 搜索功能 =====
+function searchWord() {
+
+  const keyword = document.getElementById("searchInput").value.trim();
+
+  if (!keyword) {
+    alert("请输入要搜索的词语");
+    return;
+  }
+
+
+  const index = zh.indexOf(keyword);
+
+
+  if (index !== -1) {
+
+    currentIndex = index;
+    updateQuestion();
+
+  } else {
+
+    alert("没有找到：" + keyword);
+
+  }
+
+}
+
+
+updateQuestion();
+  </script>
+</body>
+</html>
