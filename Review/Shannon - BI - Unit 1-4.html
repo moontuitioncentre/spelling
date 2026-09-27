@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>听写练习（English）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background-color: #f0f0f0;
+    }
+    .container {
+      text-align: center; padding: 20px; background: #fff; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,.1); max-width: 720px; width: 92%;
+    }
+    .question { font-size: 28px; margin-bottom: 10px; }
+    .word { font-size: 34px; margin-bottom: 16px; }
+    .btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  margin-bottom: 14px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  font-size: 18px;
+  padding: 8px 12px;
+  width: 180px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.btn.search-btn {
+  background-color: #008cff;
+}
+
+    .btn {
+      font-size: 18px; padding: 10px 20px; border: none; border-radius: 8px;
+      background-color: #dc3545; color: #fff; cursor: pointer;
+    }
+    .btn.secondary { background-color: #6c757d; }
+    .btn.info { background-color: #dc3545; }
+    .btn.success { background-color: #dc3545; }
+    .btn.warning { background-color: #ffc107; color: #000; }
+    .meaning {
+      margin-top: 10px; font-size: 20px; background: #f8f9fa; border-radius: 8px;
+      padding: 12px; min-height: 60px; line-height: 1.6; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="search-box">
+  <input 
+  type="text" 
+  id="searchInput" 
+  placeholder=""
+  onkeydown="if(event.key === 'Enter') searchWord();"
+>
+
+  <button 
+    class="btn search-btn" 
+    onclick="searchWord()">
+    Search
+  </button>
+</div>
+    <div class="question" id="question">题目 1</div>
+    <div class="word" id="word">—</div>
+    
+    <div class="btns">
+      <!-- 华文优先 -->
+       <div class="btn-row">
+      <button class="btn" onclick="playEnglishWord()">🔊</button>
+      <button class="btn success" onclick="playMalayWord()">Bahasa Melayu</button>
+      <button class="btn info" onclick="showChinese()">华文</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn warning" onclick="showEnglishSentence()">Sentence</button>
+      <button class="btn warning" onclick="showMalaySentence()">Bina Ayat</button>      
+      <button class="btn warning" onclick="showChineseSentence()">造句</button>
+      
+      </div>
+
+      <div class="btn-row">
+      <button class="btn secondary" onclick="prevWord()">上一题</button>
+      <button class="btn secondary" onclick="nextWord()">下一题</button>
+      </div>
+
+</div>
+
+    <div class="meaning" id="meaning"></div>
+
+  </div>
+
+  <script>
+    // ====== 词库 ======
+    const zh = [
+      "笔",
+  "橡皮",
+  "铅笔",
+  "书",
+  "笔记本",
+  "书包",
+  "书桌",
+  "尺",
+  "铅笔盒",
+  "桌子",
+  "回来",
+  "坐在你的书桌前",
+  "合上你的书",
+  "小心",
+  "拿出你的尺",
+  "写",
+  "请",
+  "没关系",
+  "这是你的铅笔盒",
+  "告诉我",
+  "打开你的书包",
+  "递给我一支笔",
+  "收起你的书",
+  "找橡皮",
+  "谢谢",
+  "对不起",
+  "给你",
+  "书桌很乱",
+  "风筝",
+  "洋娃娃",
+  "怪物",
+  "飞机",
+  "电脑游戏",
+  "火车",
+  "汽车",
+  "球",
+  "自行车",
+  "卡丁车",
+  "三角形",
+  "正方形",
+  "圆形",
+  "平行四边形",
+  "长方形",
+  "菱形",
+  "鱼",
+  "鸟",
+  "船",
+  "巴士",
+  "最喜欢的",
+  "长",
+  "短",
+  "大",
+  "小",
+  "丑陋",
+  "美丽",
+  "旧",
+  "新",
+  "高",
+  "大象",
+  "老鼠",
+  "蜥蜴",
+  "青蛙",
+  "蜘蛛",
+  "鸭子",
+  "狗",
+  "猫",
+  "蛇",
+  "蝴蝶",
+  "鳄鱼",
+  "老虎",
+  "长颈鹿",
+  "姐妹",
+  "木头",
+  "树",
+  "叶子",
+  "草",
+  "兄弟",
+  "花",
+  "美丽",
+  "聪明",
+  "了不起",
+  "很棒",
+  "傻",
+  "高",
+  "躲藏",
+  "触摸",
+  "回来",
+  "喜欢",
+  "香蕉",
+  "蛋糕",
+  "奶酪",
+  "三明治",
+  "苹果",
+  "披萨",
+  "香肠",
+  "鸡肉",
+  "牛排",
+  "豌豆",
+  "胡萝卜",
+  "橙汁",
+  "热狗",
+  "水果",
+  "西兰花",
+  "洋葱",
+  "四季豆",
+  "蘑菇",
+  "马铃薯",
+  "玉米",
+  "桃子",
+  "黄梨",
+  "梨",
+  "橙",
+  "椰子",
+  "番茄",
+  "草莓",
+  "胡椒",
+  "蔬菜",
+  "木瓜",
+  "西瓜",
+  "芒果",
+  "葡萄",
+  "长豆",
+  "菠菜",
+  "十一",
+  "十二",
+  "十三",
+  "十四",
+  "十五",
+  "十六",
+  "十七",
+  "十八",
+  "十九",
+  "二十"
+    ];
+
+    const py = [
+  "bǐ",
+  "xiàng pí",
+  "qiān bǐ",
+  "shū",
+  "bǐ jì běn",
+  "shū bāo",
+  "shū zhuō",
+  "chǐ",
+  "qiān bǐ hé",
+  "zhuō zi",
+  "huí lái",
+  "zuò zài nǐ de shū zhuō qián",
+  "hé shàng nǐ de shū",
+  "xiǎo xīn",
+  "ná chū nǐ de chǐ",
+  "xiě",
+  "qǐng",
+  "méi guān xi",
+  "zhè shì nǐ de qiān bǐ hé",
+  "gào su wǒ",
+  "dǎ kāi nǐ de shū bāo",
+  "dì gěi wǒ yī zhī bǐ",
+  "shōu qǐ nǐ de shū",
+  "zhǎo xiàng pí",
+  "xiè xie",
+  "duì bu qǐ",
+  "gěi nǐ",
+  "shū zhuō hěn luàn",
+  "fēng zheng",
+  "yáng wá wa",
+  "guài wù",
+  "fēi jī",
+  "diàn nǎo yóu xì",
+  "huǒ chē",
+  "qì chē",
+  "qiú",
+  "zì xíng chē",
+  "kǎ dīng chē",
+  "sān jiǎo xíng",
+  "zhèng fāng xíng",
+  "yuán xíng",
+  "píng xíng sì biān xíng",
+  "cháng fāng xíng",
+  "líng xíng",
+  "yú",
+  "niǎo",
+  "chuán",
+  "bā shì",
+  "zuì xǐ huān de",
+  "cháng",
+  "duǎn",
+  "dà",
+  "xiǎo",
+  "chǒu lòu",
+  "měi lì",
+  "jiù",
+  "xīn",
+  "gāo",
+  "dà xiàng",
+  "lǎo shǔ",
+  "xī yì",
+  "qīng wā",
+  "zhī zhū",
+  "yā zi",
+  "gǒu",
+  "māo",
+  "shé",
+  "hú dié",
+  "è yú",
+  "lǎo hǔ",
+  "cháng jǐng lù",
+  "jiě mèi",
+  "mù tou",
+  "shù",
+  "yè zi",
+  "cǎo",
+  "xiōng dì",
+  "huā",
+  "měi lì",
+  "cōng míng",
+  "liǎo bu qǐ",
+  "hěn bàng",
+  "shǎ",
+  "gāo",
+  "duǒ cáng",
+  "chù mō",
+  "huí lái",
+  "xǐ huān",
+  "xiāng jiāo",
+  "dàn gāo",
+  "nǎi lào",
+  "sān míng zhì",
+  "píng guǒ",
+  "pī sà",
+  "xiāng cháng",
+  "jī ròu",
+  "niú pái",
+  "wān dòu",
+  "hú luó bo",
+  "chéng zhī",
+  "rè gǒu",
+  "shuǐ guǒ",
+  "xī lán huā",
+  "yáng cōng",
+  "sì jì dòu",
+  "mó gu",
+  "mǎ líng shǔ",
+  "yù mǐ",
+  "táo zi",
+  "huáng lí",
+  "lí",
+  "chéng",
+  "yē zi",
+  "fān qié",
+  "cǎo méi",
+  "hú jiāo",
+  "shū cài",
+  "mù guā",
+  "xī guā",
+  "máng guǒ",
+  "pú táo",
+  "cháng dòu",
+  "bō cài",
+  "shí yī",
+  "shí èr",
+  "shí sān",
+  "shí sì",
+  "shí wǔ",
+  "shí liù",
+  "shí qī",
+  "shí bā",
+  "shí jiǔ",
+  "èr shí"
+];
+
+    const en = [
+      "pen",
+  "rubber",
+  "pencil",
+  "book",
+  "notebook",
+  "bag",
+  "desk",
+  "ruler",
+  "pencil case",
+  "table",
+  "come back",
+  "sit at your desk",
+  "close your book",
+  "watch out",
+  "take out your ruler",
+  "write",
+  "please",
+  "it's ok",
+  "here's your pencil case",
+  "tell me",
+  "open your bag",
+  "pass me a pen",
+  "put away your book",
+  "look for the rubber",
+  "thank you",
+  "i'm sorry",
+  "here you are",
+  "the desk is in a mess",
+  "kite",
+  "doll",
+  "monster",
+  "plane",
+  "computer game",
+  "train",
+  "car",
+  "ball",
+  "bike",
+  "go-kart",
+  "triangle",
+  "square",
+  "circle",
+  "parallelogram",
+  "rectangle",
+  "diamond",
+  "fish",
+  "bird",
+  "boat",
+  "bus",
+  "favourite",
+  "long",
+  "short",
+  "big",
+  "small",
+  "ugly",
+  "beautiful",
+  "old",
+  "new",
+  "tall",
+  "elephant",
+  "rat",
+  "lizard",
+  "frog",
+  "spider",
+  "duck",
+  "dog",
+  "cat",
+  "snake",
+  "butterfly",
+  "crocodile",
+  "tiger",
+  "giraffe",
+  "sister",
+  "logs",
+  "trees",
+  "leaves",
+  "grass",
+  "brother",
+  "flowers",
+  "beautiful",
+  "clever",
+  "amazing",
+  "great",
+  "silly",
+  "tall",
+  "hide",
+  "touch",
+  "come back",
+  "like",
+  "banana",
+  "cake",
+  "cheese",
+  "sandwich",
+  "apple",
+  "pizza",
+  "sausage",
+  "chicken",
+  "steak",
+  "pea",
+  "carrot",
+  "orange juice",
+  "hot dog",
+  "fruit",
+  "broccoli",
+  "onion",
+  "green bean",
+  "mushroom",
+  "potato",
+  "corn",
+  "peach",
+  "pineapple",
+  "pear",
+  "orange",
+  "coconut",
+  "tomato",
+  "strawberry",
+  "pepper",
+  "vegetable",
+  "papaya",
+  "watermelon",
+  "mango",
+  "grape",
+  "long bean",
+  "spinach",
+  "eleven",
+  "twelve",
+  "thirteen",
+  "fourteen",
+  "fifteen",
+  "sixteen",
+  "seventeen",
+  "eighteen",
+  "nineteen",
+  "twenty"
+    ];
+
+    const bm = [
+"pen",
+  "pemadam",
+  "pensel",
+  "buku",
+  "buku nota",
+  "beg",
+  "meja tulis",
+  "pembaris",
+  "kotak pensel",
+  "meja",
+  "balik",
+  "duduk di meja tulis kamu",
+  "tutup buku kamu",
+  "awas",
+  "keluarkan pembaris kamu",
+  "tulis",
+  "sila",
+  "tidak mengapa",
+  "ini kotak pensel kamu",
+  "beritahu saya",
+  "buka beg kamu",
+  "beri saya sebatang pen",
+  "simpan buku kamu",
+  "cari pemadam",
+  "terima kasih",
+  "maaf",
+  "ini untuk kamu",
+  "meja tulis ini bersepah",
+  "layang-layang",
+  "anak patung",
+  "raksasa",
+  "kapal terbang",
+  "permainan komputer",
+  "kereta api",
+  "kereta",
+  "bola",
+  "basikal",
+  "kereta go-kart",
+  "segi tiga",
+  "segi empat sama",
+  "bulatan",
+  "segi empat selari",
+  "segi empat tepat",
+  "rombus",
+  "ikan",
+  "burung",
+  "bot",
+  "bas",
+  "kegemaran",
+  "panjang",
+  "pendek",
+  "besar",
+  "kecil",
+  "hodoh",
+  "cantik",
+  "lama",
+  "baharu",
+  "tinggi",
+  "gajah",
+  "tikus",
+  "cicak",
+  "katak",
+  "labah-labah",
+  "itik",
+  "anjing",
+  "kucing",
+  "ular",
+  "kupu-kupu",
+  "buaya",
+  "harimau",
+  "zirafah",
+  "kakak",
+  "batang kayu",
+  "pokok",
+  "daun",
+  "rumput",
+  "adik-beradik",
+  "bunga",
+  "cantik",
+  "pandai",
+  "menakjubkan",
+  "hebat",
+  "bodoh",
+  "tinggi",
+  "bersembunyi",
+  "sentuh",
+  "balik",
+  "suka",
+  "pisang",
+  "kek",
+  "keju",
+  "sandwic",
+  "epal",
+  "piza",
+  "sosej",
+  "ayam",
+  "stik",
+  "kacang pis",
+  "lobak merah",
+  "jus oren",
+  "hot dog",
+  "buah-buahan",
+  "brokoli",
+  "bawang",
+  "kacang hijau",
+  "cendawan",
+  "kentang",
+  "jagung",
+  "pic",
+  "nanas",
+  "pir",
+  "oren",
+  "kelapa",
+  "tomato",
+  "strawberi",
+  "lada",
+  "sayur-sayuran",
+  "betik",
+  "tembikai",
+  "mangga",
+  "anggur",
+  "kacang panjang",
+  "bayam",
+  "sebelas",
+  "dua belas",
+  "tiga belas",
+  "empat belas",
+  "lima belas",
+  "enam belas",
+  "tujuh belas",
+  "lapan belas",
+  "sembilan belas",
+  "dua puluh"
+];
+
+    const zhSentences = [
+      "我用笔写字。",
+  "我用橡皮擦掉错误。",
+  "我用铅笔写字。",
+  "我每天读一本书。",
+  "我在笔记本上写字。",
+  "我的书包很重。",
+  "我坐在书桌前读书。",
+  "我用尺画线。",
+  "我的铅笔盒是蓝色的。",
+  "书在桌子上。",
+  "请快点回来。",
+  "请坐在你的书桌前。",
+  "请合上你的书。",
+  "小心车子。",
+  "请拿出你的尺。",
+  "请在这里写上你的名字。",
+  "请帮助我。",
+  "没关系，不要担心。",
+  "这是你的铅笔盒。",
+  "请告诉我答案。",
+  "请打开你的书包。",
+  "请递给我一支笔。",
+  "请收起你的书。",
+  "请找橡皮。",
+  "谢谢你的帮助。",
+  "对不起，我迟到了。",
+  "给你。",
+  "书桌很乱。",
+  "我在公园里放风筝。",
+  "她玩她的洋娃娃。",
+  "故事里的怪物很可怕。",
+  "飞机在天空飞。",
+  "我在家玩电脑游戏。",
+  "那辆火车很长。",
+  "爸爸开汽车。",
+  "我玩球。",
+  "我骑自行车去学校。",
+  "我们在公园玩卡丁车。",
+  "三角形有三条边。",
+  "正方形有四条相等的边。",
+  "请画一个圆形。",
+  "平行四边形有四条边。",
+  "长方形有四条边。",
+  "菱形有四条边。",
+  "鱼在水里游。",
+  "鸟在天空飞。",
+  "我们坐船去岛上。",
+  "我坐巴士去学校。",
+  "我最喜欢的食物是面。",
+  "这条绳子很长。",
+  "这支铅笔很短。",
+  "大象是一种大动物。",
+  "老鼠是一种小动物。",
+  "那个怪物很丑陋。",
+  "这朵花很美丽。",
+  "这是一本旧书。",
+  "我有一个新书包。",
+  "长颈鹿很高。",
+  "大象很大。",
+  "我在厨房看到一只老鼠。",
+  "蜥蜴在墙上。",
+  "青蛙能跳得很高。",
+  "蜘蛛有八条腿。",
+  "鸭子在池塘里游。",
+  "那只狗在大声地叫。",
+  "猫在睡觉。",
+  "那条蛇很长。",
+  "蝴蝶很漂亮。",
+  "鳄鱼有锋利的牙齿。",
+  "老虎是野生动物。",
+  "长颈鹿有长长的脖子。",
+  "我的姐妹很善良。",
+  "木头在地上。",
+  "森林里有很多树。",
+  "叶子从树上掉下来。",
+  "草是绿色的。",
+  "我的兄弟在玩。",
+  "花很美丽。",
+  "这朵花很美丽。",
+  "她是一个聪明的女孩。",
+  "你做得了不起。",
+  "你做得很棒。",
+  "不要傻。",
+  "那棵树很高。",
+  "猫喜欢躲藏。",
+  "请不要触摸热锅。",
+  "请快点回来。",
+  "我喜欢吃苹果。",
+  "我每天早上吃一根香蕉。",
+  "妈妈烤了一个蛋糕。",
+  "我喜欢吃奶酪。",
+  "妈妈为我做了一个三明治。",
+  "我每天吃一个苹果。",
+  "我喜欢吃披萨。",
+  "他早餐吃香肠。",
+  "妈妈晚餐煮鸡肉。",
+  "爸爸煮了牛排当晚餐。",
+  "我喜欢吃豌豆。",
+  "兔子吃胡萝卜。",
+  "我喝橙汁。",
+  "我吃热狗。",
+  "我喜欢吃水果。",
+  "我吃西兰花。",
+  "我不喜欢洋葱。",
+  "我喜欢吃四季豆。",
+  "蘑菇长在潮湿的泥土上。",
+  "我喜欢吃马铃薯。",
+  "我喜欢吃玉米。",
+  "桃子很甜。",
+  "黄梨很甜。",
+  "梨很多汁。",
+  "我每天吃一个橙。",
+  "椰子很大。",
+  "我每天都吃番茄。",
+  "草莓是红色的。",
+  "这个胡椒很辣。",
+  "我们应该多吃蔬菜。",
+  "木瓜很甜。",
+  "西瓜又大又红。",
+  "芒果很甜。",
+  "我喜欢吃葡萄。",
+  "我喜欢吃长豆。",
+  "菠菜是一种绿色蔬菜。",
+  "班上有十一个学生。",
+  "我有十二支铅笔。",
+  "她十三岁。",
+  "他有十四本书。",
+  "她十五岁。",
+  "他有十六支铅笔。",
+  "房间里有十七张椅子。",
+  "我的弟弟十八岁。",
+  "班上有十九个学生。",
+  "房间里有二十张椅子。"
+    ];
+
+    const enSentences = [
+      "I write with a pen.",
+  "I use a rubber to erase my mistakes.",
+  "I write with a pencil.",
+  "I read a book every day.",
+  "I write in my notebook.",
+  "My bag is very heavy.",
+  "I sit at my desk to study.",
+  "I draw a line with a ruler.",
+  "My pencil case is blue.",
+  "The books are on the table.",
+  "Please come back soon.",
+  "Please sit at your desk.",
+  "Please close your book.",
+  "Watch out for the car.",
+  "Take out your ruler, please.",
+  "Please write your name here.",
+  "Please help me.",
+  "It's ok, do not worry.",
+  "Here's your pencil case.",
+  "Please tell me the answer.",
+  "Open your bag, please.",
+  "Please pass me a pen.",
+  "Please put away your book.",
+  "Please look for the rubber.",
+  "Thank you for your help.",
+  "I'm sorry, I am late.",
+  "Here you are.",
+  "The desk is in a mess.",
+  "I fly a kite in the park.",
+  "She plays with her doll.",
+  "The monster in the story is scary.",
+  "The plane flies in the sky.",
+  "I play a computer game at home.",
+  "The train is very long.",
+  "My father drives a car.",
+  "I play with a ball.",
+  "I ride my bike to school.",
+  "We rode a go-kart at the park.",
+  "A triangle has three sides.",
+  "A square has four equal sides.",
+  "Please draw a circle.",
+  "A parallelogram has four sides.",
+  "A rectangle has four sides.",
+  "A diamond has four sides.",
+  "The fish swims in the water.",
+  "The bird flies in the sky.",
+  "We went to the island by boat.",
+  "I go to school by bus.",
+  "My favourite food is noodles.",
+  "This rope is very long.",
+  "This pencil is very short.",
+  "The elephant is a big animal.",
+  "The mouse is a small animal.",
+  "The monster is ugly.",
+  "The flower is very beautiful.",
+  "This is an old book.",
+  "I have a new bag.",
+  "The giraffe is very tall.",
+  "The elephant is very big.",
+  "I saw a rat in the kitchen.",
+  "The lizard is on the wall.",
+  "The frog can jump high.",
+  "The spider has eight legs.",
+  "The duck swims in the pond.",
+  "The dog is barking loudly.",
+  "The cat is sleeping.",
+  "The snake is very long.",
+  "The butterfly is very pretty.",
+  "The crocodile has sharp teeth.",
+  "The tiger is a wild animal.",
+  "The giraffe has a long neck.",
+  "My sister is very kind.",
+  "The logs are on the ground.",
+  "There are many trees in the forest.",
+  "The leaves fall from the tree.",
+  "The grass is green.",
+  "My brother is playing.",
+  "The flowers are beautiful.",
+  "The flower is beautiful.",
+  "She is a clever girl.",
+  "You did an amazing job.",
+  "You did a great job.",
+  "Do not be silly.",
+  "That tree is very tall.",
+  "The cat likes to hide.",
+  "Please do not touch the hot pot.",
+  "Please come back soon.",
+  "I like to eat apples.",
+  "I eat a banana every morning.",
+  "Mother baked a cake.",
+  "I like to eat cheese.",
+  "Mother made a sandwich for me.",
+  "I eat an apple every day.",
+  "I like to eat pizza.",
+  "He eats sausage for breakfast.",
+  "My mother cooks chicken for dinner.",
+  "Father cooked steak for dinner.",
+  "I like to eat peas.",
+  "The rabbit eats a carrot.",
+  "I drink orange juice.",
+  "I eat a hot dog.",
+  "I like to eat fruit.",
+  "I eat broccoli.",
+  "I do not like onion.",
+  "I like to eat green beans.",
+  "Mushrooms grow on damp soil.",
+  "I like to eat potatoes.",
+  "I like to eat corn.",
+  "The peach is very sweet.",
+  "The pineapple is very sweet.",
+  "The pear is juicy.",
+  "I eat an orange every day.",
+  "The coconut is very big.",
+  "I eat tomatoes every day.",
+  "The strawberry is red.",
+  "This pepper is spicy.",
+  "We should eat more vegetables.",
+  "The papaya is very sweet.",
+  "The watermelon is big and red.",
+  "The mango is very sweet.",
+  "I like to eat grapes.",
+  "I like to eat long beans.",
+  "Spinach is a green vegetable.",
+  "There are eleven students in the class.",
+  "I have twelve pencils.",
+  "She is thirteen years old.",
+  "He has fourteen books.",
+  "She is fifteen years old.",
+  "He has sixteen pencils.",
+  "There are seventeen chairs in the room.",
+  "My brother is eighteen years old.",
+  "There are nineteen students in the class.",
+  "There are twenty chairs in the room."
+    ];
+
+    const msSentences = [
+      "Saya menulis dengan pen.",
+  "Saya menggunakan pemadam untuk memadam kesalahan saya.",
+  "Saya menulis dengan pensel.",
+  "Saya membaca sebuah buku setiap hari.",
+  "Saya menulis di dalam buku nota saya.",
+  "Beg saya sangat berat.",
+  "Saya duduk di meja tulis untuk belajar.",
+  "Saya melukis garisan dengan pembaris.",
+  "Kotak pensel saya berwarna biru.",
+  "Buku-buku itu berada di atas meja.",
+  "Sila balik dengan cepat.",
+  "Sila duduk di meja tulis kamu.",
+  "Sila tutup buku kamu.",
+  "Awas kereta.",
+  "Sila keluarkan pembaris kamu.",
+  "Sila tulis nama kamu di sini.",
+  "Sila tolong saya.",
+  "Tidak mengapa, jangan risau.",
+  "Ini kotak pensel kamu.",
+  "Sila beritahu saya jawapannya.",
+  "Sila buka beg kamu.",
+  "Sila beri saya sebatang pen.",
+  "Sila simpan buku kamu.",
+  "Sila cari pemadam.",
+  "Terima kasih atas bantuan kamu.",
+  "Maaf, saya lambat.",
+  "Ini untuk kamu.",
+  "Meja tulis ini bersepah.",
+  "Saya bermain layang-layang di taman.",
+  "Dia bermain dengan anak patungnya.",
+  "Raksasa dalam cerita itu menakutkan.",
+  "Kapal terbang terbang di langit.",
+  "Saya bermain permainan komputer di rumah.",
+  "Kereta api itu sangat panjang.",
+  "Ayah memandu kereta.",
+  "Saya bermain bola.",
+  "Saya menunggang basikal ke sekolah.",
+  "Kami menaiki kereta go-kart di taman.",
+  "Segi tiga mempunyai tiga sisi.",
+  "Segi empat sama mempunyai empat sisi yang sama panjang.",
+  "Sila lukis satu bulatan.",
+  "Segi empat selari mempunyai empat sisi.",
+  "Segi empat tepat mempunyai empat sisi.",
+  "Rombus mempunyai empat sisi.",
+  "Ikan berenang di dalam air.",
+  "Burung terbang di langit.",
+  "Kami pergi ke pulau dengan bot.",
+  "Saya pergi ke sekolah dengan bas.",
+  "Makanan kegemaran saya ialah mee.",
+  "Tali ini sangat panjang.",
+  "Pensel ini sangat pendek.",
+  "Gajah ialah haiwan yang besar.",
+  "Tikus ialah haiwan yang kecil.",
+  "Raksasa itu sangat hodoh.",
+  "Bunga ini sangat cantik.",
+  "Ini sebuah buku lama.",
+  "Saya mempunyai beg baharu.",
+  "Zirafah sangat tinggi.",
+  "Gajah sangat besar.",
+  "Saya melihat seekor tikus di dapur.",
+  "Cicak itu berada di dinding.",
+  "Katak boleh melompat tinggi.",
+  "Labah-labah mempunyai lapan kaki.",
+  "Itik berenang di dalam kolam.",
+  "Anjing itu menyalak dengan kuat.",
+  "Kucing itu sedang tidur.",
+  "Ular itu sangat panjang.",
+  "Kupu-kupu sangat cantik.",
+  "Buaya mempunyai gigi yang tajam.",
+  "Harimau ialah haiwan liar.",
+  "Zirafah mempunyai leher yang panjang.",
+  "Kakak saya sangat baik hati.",
+  "Batang kayu itu berada di atas tanah.",
+  "Terdapat banyak pokok di dalam hutan.",
+  "Daun jatuh dari pokok.",
+  "Rumput berwarna hijau.",
+  "Adik-beradik saya sedang bermain.",
+  "Bunga-bunga itu sangat cantik.",
+  "Bunga ini sangat cantik.",
+  "Dia seorang gadis yang pandai.",
+  "Kamu melakukan kerja yang menakjubkan.",
+  "Kamu melakukan kerja yang hebat.",
+  "Jangan bodoh.",
+  "Pokok itu sangat tinggi.",
+  "Kucing suka bersembunyi.",
+  "Sila jangan sentuh periuk panas itu.",
+  "Sila balik dengan cepat.",
+  "Saya suka makan epal.",
+  "Saya makan sebiji pisang setiap pagi.",
+  "Ibu membakar kek.",
+  "Saya suka makan keju.",
+  "Ibu membuat sandwic untuk saya.",
+  "Saya makan sebiji epal setiap hari.",
+  "Saya suka makan piza.",
+  "Dia makan sosej untuk sarapan.",
+  "Ibu saya memasak ayam untuk makan malam.",
+  "Ayah memasak stik untuk makan malam.",
+  "Saya suka makan kacang pis.",
+  "Arnab makan lobak merah.",
+  "Saya minum jus oren.",
+  "Saya makan hot dog.",
+  "Saya suka makan buah-buahan.",
+  "Saya makan brokoli.",
+  "Saya tidak suka bawang.",
+  "Saya suka makan kacang hijau.",
+  "Cendawan tumbuh di atas tanah lembap.",
+  "Saya suka makan kentang.",
+  "Saya suka makan jagung.",
+  "Pic itu sangat manis.",
+  "Nanas itu sangat manis.",
+  "Pir itu berair.",
+  "Saya makan sebiji oren setiap hari.",
+  "Kelapa itu sangat besar.",
+  "Saya makan tomato setiap hari.",
+  "Strawberi itu berwarna merah.",
+  "Lada ini sangat pedas.",
+  "Kita harus makan lebih banyak sayur-sayuran.",
+  "Betik itu sangat manis.",
+  "Tembikai itu besar dan merah.",
+  "Mangga itu sangat manis.",
+  "Saya suka makan anggur.",
+  "Saya suka makan kacang panjang.",
+  "Bayam ialah sejenis sayur hijau.",
+  "Terdapat sebelas murid di dalam kelas.",
+  "Saya mempunyai dua belas batang pensel.",
+  "Dia berumur tiga belas tahun.",
+  "Dia mempunyai empat belas buah buku.",
+  "Dia berumur lima belas tahun.",
+  "Dia mempunyai enam belas batang pensel.",
+  "Terdapat tujuh belas kerusi di dalam bilik.",
+  "Adik saya berumur lapan belas tahun.",
+  "Terdapat sembilan belas murid di dalam kelas.",
+  "Terdapat dua puluh kerusi di dalam bilik."
+    ];
+
+    // ===== DOM & 语音 =====
+    let currentIndex = 0;
+    const questionDiv = document.getElementById('question');
+    const wordDiv = document.getElementById('word');
+    const meaningDiv = document.getElementById('meaning');
+
+    function setMeaning(text) { meaningDiv.textContent = text || ''; }
+
+    // 统一的朗读函数（默认：慢速 0.4、音高 0.6）
+    function speak(text, lang, preferNames = [], rate = 0.4, pitch = 0.6) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = rate;
+      u.pitch = pitch;
+
+      const trySpeak = () => {
+        const voices = speechSynthesis.getVoices() || [];
+        let candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith(lang.toLowerCase()));
+        // 如果没有马来语，回退印尼语
+        if (!candidates.length && lang.toLowerCase().startsWith('ms')) {
+          candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith('id'));
+          if (candidates.length) u.lang = 'id-ID';
+        }
+        for (const key of preferNames) {
+          const found = candidates.find(v => (v.name || '').toLowerCase().includes(key.toLowerCase()));
+          if (found) { u.voice = found; break; }
+        }
+        if (!u.voice && candidates.length) u.voice = candidates[0];
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      };
+
+      if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = trySpeak;
+      }
+      trySpeak();
+    }
+
+    // ===== 华文为主（按钮函数不再覆盖速率/音高）=====
+    function playChineseWord() {
+  const text = zh[currentIndex] || '';
+  const pinyin = py[currentIndex] || '';
+
+  setMeaning(pinyin);
+
+  speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+}
+
+    function showEnglish() {
+      const text = en[currentIndex] || '(待添加英文)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function playMalayWord(){
+
+const text = bm[currentIndex] || '';
+
+setMeaning(text);
+
+speak(
+text,
+'ms-MY',
+['Microsoft','Malay','Bahasa']
+);
+
+}
+
+    function showChineseSentence() {
+      const text = zhSentences[currentIndex] || '(待添加华文造句)';
+      setMeaning(text);
+      speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+    }
+
+    function showEnglishSentence() {
+      const text = enSentences[currentIndex] || '(待添加英文句子)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function showMalaySentence() {
+      const text = msSentences[currentIndex] || '(待添加马来文句子)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Rizwan','Microsoft','Malay','Bahasa']);
+    }
+
+    function nextWord() {
+
+if(currentIndex < bm.length - 1){
+
+currentIndex++;
+
+updateQuestion();
+
+}
+
+}
+
+    function prevWord(){
+
+if(currentIndex > 0){
+
+currentIndex--;
+
+updateQuestion();
+
+}
+
+}
+
+    function updateQuestion() {
+  questionDiv.innerText = `题目 ${currentIndex + 1}`;
+  wordDiv.innerText = en[currentIndex] || '—';
+  setMeaning('');
+}
+
+
+// ===== 搜索功能 =====
+function searchWord() {
+
+  const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+
+  if (!keyword) {
+    alert("请输入要搜索的词语");
+    return;
+  }
+
+
+  const index = en.findIndex(word => 
+word.toLowerCase() === keyword
+);
+
+
+  if (index !== -1) {
+
+    currentIndex = index;
+    updateQuestion();
+
+  } else {
+
+    alert("没有找到：" + keyword);
+
+  }
+
+}
+
+function showChinese(){
+
+const text = zh[currentIndex] || '';
+
+setMeaning(text);
+
+speak(
+text,
+'zh-CN',
+['Xiaoyi','Microsoft']
+);
+
+}
+
+function playEnglishWord(){
+
+const text = en[currentIndex] || '';
+
+setMeaning('');
+
+speak(
+text,
+'en-US',
+['Google','Microsoft','Natural']
+);
+
+}
+
+updateQuestion();
+  </script>
+</body>
+</html>

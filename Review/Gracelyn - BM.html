@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>听写练习（Bahasa Melayu）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background-color: #f0f0f0;
+    }
+    .container {
+      text-align: center; padding: 20px; background: #fff; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,.1); max-width: 720px; width: 92%;
+    }
+    .question { font-size: 28px; margin-bottom: 10px; }
+    .word { font-size: 34px; margin-bottom: 16px; }
+    .btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  margin-bottom: 14px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  font-size: 18px;
+  padding: 8px 12px;
+  width: 180px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.btn.search-btn {
+  background-color: #008cff;
+}
+
+    .btn {
+      font-size: 18px; padding: 10px 20px; border: none; border-radius: 8px;
+      background-color: #dc3545; color: #fff; cursor: pointer;
+    }
+    .btn.secondary { background-color: #6c757d; }
+    .btn.info { background-color: #dc3545; }
+    .btn.success { background-color: #dc3545; }
+    .btn.warning { background-color: #ffc107; color: #000; }
+    .meaning {
+      margin-top: 10px; font-size: 20px; background: #f8f9fa; border-radius: 8px;
+      padding: 12px; min-height: 60px; line-height: 1.6; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="search-box">
+  <input 
+  type="text" 
+  id="searchInput" 
+  placeholder=""
+  onkeydown="if(event.key === 'Enter') searchWord();"
+>
+
+  <button 
+    class="btn search-btn" 
+    onclick="searchWord()">
+    Search
+  </button>
+</div>
+    <div class="question" id="question">题目 1</div>
+    <div class="word" id="word">—</div>
+    
+    <div class="btns">
+      <!-- 华文优先 -->
+       <div class="btn-row">
+      <button class="btn" onclick="playMalayWord()">🔊</button>
+      <button class="btn success" onclick="showEnglish()">English</button>
+      <button class="btn info" onclick="showChinese()">华文</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn warning" onclick="showMalaySentence()">Bina Ayat</button>
+      <button class="btn warning" onclick="showEnglishSentence()">Sentence</button>
+      <button class="btn warning" onclick="showChineseSentence()">造句</button>
+      
+      </div>
+
+      <div class="btn-row">
+      <button class="btn secondary" onclick="prevWord()">上一题</button>
+      <button class="btn secondary" onclick="nextWord()">下一题</button>
+      </div>
+
+    <div class="meaning" id="meaning"></div>
+  </div>
+
+  <script>
+    // ====== 词库 ======
+    const zh = [
+      "绘画艺术",
+  "画壁画",
+  "褪色",
+  "叮叮响",
+  "走廊",
+  "招待客人",
+  "闻香气",
+  "喝饮料",
+  "庆祝光临",
+  "贵宾",
+  "屏幕显示",
+  "家乡",
+  "被贴上",
+  "雕刻",
+  "贵族故事",
+  "伴随音乐",
+  "演员化妆",
+  "阅读标签",
+  "速度",
+  "宫廷大臣",
+  "世代相传",
+  "各种香料",
+  "容光焕发",
+  "指甲花彩绘",
+  "脚酸",
+  "杂技表演",
+  "惊心动魄",
+  "新娘房",
+  "藤球开球",
+  "被摇晃",
+  "周围",
+  "阴凉",
+  "供应",
+  "请勿砍伐",
+  "二手物品",
+  "堆肥",
+  "雨水收集",
+  "寒冷的温度",
+  "绿色的树木",
+  "发出隆隆声",
+  "漂浮",
+  "鸣叫",
+  "野生动物",
+  "看见彩虹",
+  "抬起头",
+  "走在山径上",
+  "椰丝",
+  "绿色实践",
+  "浪费电",
+  "节能灯",
+  "政府部门",
+  "自然保护",
+  "海桑树",
+  "红树",
+  "海岸侵蚀",
+  "松土",
+  "成熟",
+  "饲养",
+  "坐骑",
+  "鸡舍",
+  "椰骨扫帚",
+  "脆江鱼仔参巴",
+  "挤羊奶",
+  "饲养者",
+  "读出它的标签",
+  "头脑智力",
+  "身体器官",
+  "鸡粪",
+  "批发商",
+  "小木箱",
+  "保管财物",
+  "任务指南书",
+  "日常作息",
+  "算术课",
+  "斑鸠",
+  "有秩序地排队",
+  "愿学识蒙福",
+  "取得成就",
+  "进行投票",
+  "演讲",
+  "角色",
+  "有礼貌",
+  "搭便车",
+  "巴士站",
+  "充满奉献精神",
+  "残障人士",
+  "喂粥",
+  "阴凉的地方",
+  "有品德",
+  "按下按钮"
+    ];
+
+    const py = [
+  "huì huà yì shù",
+  "huà bì huà",
+  "tuì sè",
+  "dīng dīng xiǎng",
+  "zǒu láng",
+  "zhāo dài kè rén",
+  "wén xiāng qì",
+  "hē yǐn liào",
+  "qìng zhù guāng lín",
+  "guì bīn",
+  "píng mù xiǎn shì",
+  "jiā xiāng",
+  "bèi tiē shàng",
+  "diāo kè",
+  "guì zú gù shì",
+  "bàn suí yīn yuè",
+  "yǎn yuán huà zhuāng",
+  "yuè dú biāo qiān",
+  "sù dù",
+  "gōng tíng dà chén",
+  "shì dài xiāng chuán",
+  "gè zhǒng xiāng liào",
+  "róng guāng huàn fā",
+  "zhǐ jia huā cǎi huì",
+  "jiǎo suān",
+  "zá jì biǎo yǎn",
+  "jīng xīn dòng pò",
+  "xīn niáng fáng",
+  "téng qiú kāi qiú",
+  "bèi yáo huàng",
+  "zhōu wéi",
+  "yīn liáng",
+  "gōng yìng",
+  "qǐng wù kǎn fá",
+  "èr shǒu wù pǐn",
+  "duī féi",
+  "yǔ shuǐ shōu jí",
+  "hán lěng de wēn dù",
+  "lǜ sè de shù mù",
+  "fā chū lóng lóng shēng",
+  "piāo fú",
+  "míng jiào",
+  "yě shēng dòng wù",
+  "kàn jiàn cǎi hóng",
+  "tái qǐ tóu",
+  "zǒu zài shān jìng shàng",
+  "yē sī",
+  "lǜ sè shí jiàn",
+  "làng fèi diàn",
+  "jié néng dēng",
+  "zhèng fǔ bù mén",
+  "zì rán bǎo hù",
+  "hǎi sāng shù",
+  "hóng shù",
+  "hǎi àn qīn shí",
+  "sōng tǔ",
+  "chéng shú",
+  "sì yǎng",
+  "zuò qí",
+  "jī shè",
+  "yē gǔ sào zhou",
+  "cuì jiāng yú zǎi shēn bā",
+  "jǐ yáng nǎi",
+  "sì yǎng zhě",
+  "dú chū tā de biāo qiān",
+  "tóu nǎo zhì lì",
+  "shēn tǐ qì guān",
+  "jī fèn",
+  "pī fā shāng",
+  "xiǎo mù xiāng",
+  "bǎo guǎn cái wù",
+  "rèn wù zhǐ nán shū",
+  "rì cháng zuò xī",
+  "suàn shù kè",
+  "bān jiū",
+  "yǒu zhì xù de pái duì",
+  "yuàn xué shí méng fú",
+  "qǔ dé chéng jiù",
+  "jìn xíng tóu piào",
+  "yǎn jiǎng",
+  "jué sè",
+  "yǒu lǐ mào",
+  "dā biàn chē",
+  "bā shì zhàn",
+  "chōng mǎn fèng xiàn jīng shén",
+  "cán zhàng rén shì",
+  "wèi zhōu",
+  "yīn liáng de dì fāng",
+  "yǒu pǐn dé",
+  "àn xià àn niǔ"
+];
+
+    const en = [
+      "painting art",
+  "paint a mural",
+  "fade",
+  "ring",
+  "corridor",
+  "serve guests",
+  "smell the aroma",
+  "sip a drink",
+  "celebrate the arrival",
+  "honoured guest",
+  "screen display",
+  "hometown",
+  "stuck on",
+  "carving",
+  "noble story",
+  "accompanied by music",
+  "actor puts on makeup",
+  "read the label",
+  "speed",
+  "palace minister",
+  "passed down from generation to generation",
+  "various spices",
+  "radiant",
+  "henna drawing",
+  "leg ache",
+  "acrobatic act",
+  "thrilling",
+  "bride's room",
+  "sepak manggis serve",
+  "rocked",
+  "surroundings",
+  "shady",
+  "supply",
+  "do not cut down",
+  "used items",
+  "compost fertiliser",
+  "rainwater collection",
+  "cold temperature",
+  "green trees",
+  "rumble",
+  "float",
+  "chirp",
+  "wildlife",
+  "spot a rainbow",
+  "look up",
+  "walk on a trail",
+  "coconut husk",
+  "green practice",
+  "wastage of electricity",
+  "energy-efficient lamp",
+  "government department",
+  "nature conservation",
+  "berembang tree",
+  "mangrove tree",
+  "coastal erosion",
+  "loosen",
+  "ripe",
+  "raise",
+  "ride",
+  "chicken coop",
+  "broom made of coconut ribs",
+  "crispy anchovy sambal",
+  "milk a goat",
+  "breeder",
+  "read out its label",
+  "brain intelligence",
+  "body organs",
+  "chicken droppings",
+  "wholesaler",
+  "small wooden box",
+  "safeguard belongings",
+  "task guidebook",
+  "daily routine",
+  "arithmetic class",
+  "turtledove",
+  "queue in an orderly manner",
+  "may knowledge be blessed",
+  "achieve success",
+  "cast a vote",
+  "give a talk",
+  "role",
+  "polite",
+  "hitch a ride",
+  "bus stop",
+  "full of dedication",
+  "person with disabilities",
+  "feed porridge",
+  "shady area",
+  "virtuous",
+  "press the button"
+    ];
+
+    const bm = [
+"seni lukis",
+  "lukis mural",
+  "luntur",
+  "berdering",
+  "ruang legar",
+  "menjamu tetamu",
+  "mencium aroma",
+  "menghirup minuman",
+  "meraikan kedatangan",
+  "tetamu kehormat",
+  "paparan skrin",
+  "kampung halaman",
+  "dilekapkan",
+  "ukiran",
+  "kisah bangsawan",
+  "diiringi muzik",
+  "pelakon disolek",
+  "membaca label",
+  "kepantasan",
+  "pembesar istana",
+  "turun-temurun",
+  "rempah-ratus",
+  "berseri-seri",
+  "lukisan inai",
+  "lenguh kaki",
+  "aksi akrobatik",
+  "mendebarkan",
+  "rumah pengantin",
+  "sepak manggis",
+  "ditimang",
+  "sekeliling",
+  "teduh",
+  "membekalkan",
+  "usah ditebang",
+  "barangan terpakai",
+  "baja kompos",
+  "tadahan air hujan",
+  "suhu sejuk",
+  "pepohon hijau",
+  "berdengkang",
+  "terapung-apung",
+  "berkicau",
+  "hidupan liar",
+  "ternampak pelangi",
+  "mendongakkan kepala",
+  "berjalan di denai",
+  "sabut kelapa",
+  "amalan hijau",
+  "pembaziran elektrik",
+  "lampu cekap tenaga",
+  "jabatan kerajaan",
+  "pemeliharaan alam",
+  "pokok berembang",
+  "pokok bakau",
+  "hakisan pantai",
+  "menggembur",
+  "matang",
+  "membela",
+  "tunggangan",
+  "reban",
+  "penyapu lidi",
+  "sambal bilis garing",
+  "memerah susu kambing",
+  "penternak",
+  "bacakan labelnya",
+  "kecerdasan otak",
+  "organ-organ badan",
+  "tinja ayam",
+  "peraih",
+  "pongkes",
+  "menjaga harta benda",
+  "buku panduan tugasan",
+  "rutin harian",
+  "kelas aritmetik",
+  "burung tekukur",
+  "beratur tertib",
+  "berkatlah ilmu",
+  "raih kejayaan",
+  "membuat undian",
+  "berceramah",
+  "peranan",
+  "berbudi bahasa",
+  "menumpang kereta",
+  "hentian bas",
+  "penuh dedikasi",
+  "orang kelainan upaya",
+  "menyuap bubur",
+  "kawasan redup",
+  "berbudi pekerti",
+  "menekan butang"
+];
+
+    const zhSentences = [
+      "他对绘画艺术很感兴趣。",
+  "我们在学校墙壁上画壁画。",
+  "这件衣服的颜色已经褪色了。",
+  "电话大声地叮叮响。",
+  "学生们在学校走廊排队。",
+  "我们用糕点招待客人。",
+  "我在花园里闻花香。",
+  "他慢慢地喝饮料。",
+  "我们用掌声庆祝客人的光临。",
+  "那位贵宾发表了讲话。",
+  "手机的屏幕显示很清晰。",
+  "我在节日回到家乡。",
+  "海报被贴在墙上。",
+  "那个木雕刻很精细。",
+  "爷爷给我们讲贵族故事。",
+  "表演伴随传统音乐。",
+  "演员上台前先化妆。",
+  "买食物前请阅读标签。",
+  "那辆车的速度很快。",
+  "那位宫廷大臣很受尊敬。",
+  "这个食谱是世代相传的。",
+  "妈妈用各种香料煮菜。",
+  "她在婚礼那天容光焕发。",
+  "新娘手上的指甲花彩绘很漂亮。",
+  "走了很远的路后，我的脚很酸。",
+  "那个杂技表演很惊心动魄。",
+  "那个表演很惊心动魄。",
+  "新娘房布置得很漂亮。",
+  "那位球员的藤球开球很好。",
+  "宝宝被妈妈摇晃着。",
+  "屋子周围有很多树。",
+  "我们在阴凉的树下休息。",
+  "那家工厂供应水给居民。",
+  "请勿砍伐那棵老树。",
+  "我们在夜市卖二手物品。",
+  "堆肥是用食物残渣做的。",
+  "雨水收集用来浇花。",
+  "金马仑高原寒冷的温度很凉爽。",
+  "绿色的树木让乡村很凉爽。",
+  "汽车引擎发出很大的隆隆声。",
+  "船漂浮在水面上。",
+  "鸟在树上鸣叫。",
+  "野生动物应该受到保护。",
+  "我们雨后看见了彩虹。",
+  "他抬起头看星星。",
+  "我们在森林里的山径上走。",
+  "椰丝用来做扫帚。",
+  "绿色实践应该从小培养。",
+  "应该避免浪费电。",
+  "节能灯可以节省电。",
+  "那个政府部门负责城市的清洁。",
+  "自然保护对未来的很重要。",
+  "海桑树长在河边。",
+  "红树保护海岸免受侵蚀。",
+  "海岸侵蚀每年越来越严重。",
+  "农民在种植前先松土。",
+  "那个水果已经成熟，可以摘了。",
+  "他在家里养猫和狗。",
+  "马是古代使用的坐骑。",
+  "鸡睡在鸡舍里。",
+  "妈妈用椰骨扫帚扫地。",
+  "脆江鱼仔参巴配饭很好吃。",
+  "他每天早上挤羊奶。",
+  "那位饲养者有很多牛。",
+  "使用这个产品前请读出它的标签。",
+  "阅读可以提升头脑智力。",
+  "心脏和肺是身体器官。",
+  "鸡粪可以用作肥料。",
+  "批发商从渔夫那里买鱼。",
+  "小木箱用来存放东西。",
+  "我们必须保管学校的财物。",
+  "那本任务指南书很有用。",
+  "运动是我日常作息的一部分。",
+  "学生在数学课学算术。",
+  "斑鸠在树上鸣叫。",
+  "学生们进课室前有秩序地排队。",
+  "愿我们学到的学识蒙福。",
+  "他努力取得成就。",
+  "我们进行投票选出班长。",
+  "他在学校演讲关于健康。",
+  "每个学生都有自己的角色。",
+  "我们必须对所有人有礼貌。",
+  "我搭朋友的便车去学校。",
+  "我们在巴士站等巴士。",
+  "那位老师教学充满奉献精神。",
+  "残障人士也应该得到机会。",
+  "妈妈喂弟弟吃粥。",
+  "我们在公园阴凉的地方休息。",
+  "他是一个有品德的人。",
+  "请按下按钮开门。"
+    ];
+
+    const enSentences = [
+      "He is very interested in painting art.",
+  "We paint a mural on the school wall.",
+  "The colour of this shirt has faded.",
+  "The phone rings loudly.",
+  "The students queue in the school corridor.",
+  "We serve the guests with cakes.",
+  "I smell the aroma of flowers in the garden.",
+  "He sips the drink slowly.",
+  "We celebrate the arrival of the guests with clapping.",
+  "The honoured guest gave a speech.",
+  "The screen display of the phone is very clear.",
+  "I return to my hometown during the festival.",
+  "The poster is stuck on the wall.",
+  "The wood carving is very fine.",
+  "Grandfather tells us a noble story.",
+  "The performance is accompanied by traditional music.",
+  "The actor puts on makeup before going on stage.",
+  "Please read the label before buying food.",
+  "The speed of that car is very high.",
+  "The palace minister is very respected.",
+  "This recipe is passed down from generation to generation.",
+  "Mother uses various spices to cook.",
+  "She looks radiant on her wedding day.",
+  "The henna drawing on the bride's hand is very beautiful.",
+  "My legs ache after walking a long way.",
+  "The acrobatic act is very thrilling.",
+  "The performance is very thrilling.",
+  "The bride's room is beautifully decorated.",
+  "That player did the sepak manggis serve well.",
+  "The baby is rocked by his mother.",
+  "There are many trees around the house.",
+  "We rest under the shady tree.",
+  "The factory supplies water to the residents.",
+  "Do not cut down that old tree.",
+  "We sell used items at the flea market.",
+  "Compost fertiliser is made from food waste.",
+  "Rainwater collection is used to water the plants.",
+  "The cold temperature in Cameron Highlands is very cool.",
+  "The green trees make the village cool.",
+  "The car engine rumbles loudly.",
+  "The boat floats on the water.",
+  "The bird chirps on the tree.",
+  "Wildlife should be protected.",
+  "We spotted a rainbow after the rain.",
+  "He looks up to see the stars.",
+  "We walk on the trail in the forest.",
+  "Coconut husk is used to make brooms.",
+  "Green practice should be cultivated from young.",
+  "Wastage of electricity should be avoided.",
+  "Energy-efficient lamps can save electricity.",
+  "That government department takes care of the city's cleanliness.",
+  "Nature conservation is very important for the future.",
+  "The berembang tree grows by the river.",
+  "Mangrove trees protect the coast from erosion.",
+  "Coastal erosion is getting worse every year.",
+  "The farmer loosens the soil before planting.",
+  "The fruit is ripe and can be picked.",
+  "He raises cats and dogs at home.",
+  "The horse was the ride used in ancient times.",
+  "The chicken sleeps in the chicken coop.",
+  "Mother uses a broom made of coconut ribs to sweep the floor.",
+  "Crispy anchovy sambal is very delicious with rice.",
+  "He milks the goat every morning.",
+  "The breeder has many cows.",
+  "Please read out its label before using this product.",
+  "Reading can improve brain intelligence.",
+  "The heart and lungs are body organs.",
+  "Chicken droppings can be used as fertiliser.",
+  "The wholesaler buys fish from the fishermen.",
+  "The small wooden box is used to store things.",
+  "We must safeguard the school's belongings.",
+  "That task guidebook is very useful.",
+  "Exercise is part of my daily routine.",
+  "The students learn arithmetic in the Maths class.",
+  "The turtledove chirps on the tree.",
+  "The students queue in an orderly manner before entering the class.",
+  "May the knowledge we learn be blessed.",
+  "He works hard to achieve success.",
+  "We cast a vote to choose the class monitor.",
+  "He gives a talk about health at school.",
+  "Every student has their own role.",
+  "We must be polite to everyone.",
+  "I hitch a ride with my friend to school.",
+  "We wait for the bus at the bus stop.",
+  "That teacher is full of dedication in teaching.",
+  "People with disabilities should also be given opportunities.",
+  "Mother feeds my brother porridge.",
+  "We rest in the shady area of the park.",
+  "He is a virtuous person.",
+  "Please press the button to open the door."
+    ];
+
+    const msSentences = [
+      "Dia sangat minat dalam seni lukis.",
+  "Kami lukis mural di dinding sekolah.",
+  "Warna baju ini sudah luntur.",
+  "Telefon itu berdering dengan kuat.",
+  "Murid-murid beratur di ruang legar sekolah.",
+  "Kami menjamu tetamu dengan kuih-muih.",
+  "Saya mencium aroma bunga di taman.",
+  "Dia menghirup minuman dengan perlahan.",
+  "Kami meraikan kedatangan tetamu dengan tepukan.",
+  "Tetamu kehormat itu memberi ucapan.",
+  "Paparan skrin telefon itu sangat jelas.",
+  "Saya pulang ke kampung halaman pada hari raya.",
+  "Poster itu dilekapkan di dinding.",
+  "Ukiran kayu itu sangat halus.",
+  "Atuk menceritakan kisah bangsawan kepada kami.",
+  "Persembahan itu diiringi muzik tradisional.",
+  "Pelakon itu disolek sebelum naik ke pentas.",
+  "Sila membaca label sebelum membeli makanan.",
+  "Kepantasan kereta itu sangat tinggi.",
+  "Pembesar istana itu sangat dihormati.",
+  "Resipi ini diwarisi turun-temurun.",
+  "Ibu menggunakan rempah-ratus untuk memasak.",
+  "Dia kelihatan berseri-seri pada hari perkahwinannya.",
+  "Lukisan inai di tangan pengantin sangat cantik.",
+  "Kaki saya lenguh selepas berjalan jauh.",
+  "Aksi akrobatik itu sangat mendebarkan.",
+  "Persembahan itu sangat mendebarkan.",
+  "Rumah pengantin dihias dengan cantik.",
+  "Pemain itu melakukan sepak manggis dengan baik.",
+  "Bayi itu ditimang oleh ibunya.",
+  "Terdapat banyak pokok di sekeliling rumah.",
+  "Kami berehat di bawah pokok yang teduh.",
+  "Kilang itu membekalkan air kepada penduduk.",
+  "Usah ditebang pokok itu kerana ia sudah tua.",
+  "Kami menjual barangan terpakai di pasar lambak.",
+  "Baja kompos dibuat daripada sisa makanan.",
+  "Tadahan air hujan digunakan untuk menyiram pokok.",
+  "Suhu sejuk di Cameron Highlands sangat nyaman.",
+  "Pepohon hijau menyejukkan suasana kampung.",
+  "Enjin kereta itu berdengkang dengan kuat.",
+  "Bot itu terapung-apung di atas air.",
+  "Burung berkicau di atas pokok.",
+  "Hidupan liar harus dilindungi.",
+  "Kami ternampak pelangi selepas hujan.",
+  "Dia mendongakkan kepala untuk melihat bintang.",
+  "Kami berjalan di denai di dalam hutan.",
+  "Sabut kelapa digunakan untuk membuat penyapu.",
+  "Amalan hijau harus dipupuk sejak kecil.",
+  "Pembaziran elektrik harus dielakkan.",
+  "Lampu cekap tenaga dapat menjimatkan elektrik.",
+  "Jabatan kerajaan itu menjaga kebersihan bandar.",
+  "Pemeliharaan alam sangat penting untuk masa depan.",
+  "Pokok berembang tumbuh di tepi sungai.",
+  "Pokok bakau melindungi pantai daripada hakisan.",
+  "Hakisan pantai semakin teruk setiap tahun.",
+  "Petani menggembur tanah sebelum menanam.",
+  "Buah itu sudah matang dan boleh dipetik.",
+  "Dia membela kucing dan anjing di rumah.",
+  "Kuda ialah tunggangan yang digunakan pada zaman dahulu.",
+  "Ayam itu tidur di dalam reban.",
+  "Ibu menggunakan penyapu lidi untuk menyapu lantai.",
+  "Sambal bilis garing sangat sedap dimakan dengan nasi.",
+  "Dia memerah susu kambing setiap pagi.",
+  "Penternak itu mempunyai banyak lembu.",
+  "Sila bacakan labelnya sebelum menggunakan produk ini.",
+  "Membaca dapat meningkatkan kecerdasan otak.",
+  "Jantung dan paru-paru ialah organ-organ badan.",
+  "Tinja ayam boleh digunakan sebagai baja.",
+  "Peraih itu membeli ikan daripada nelayan.",
+  "Pongkes itu digunakan untuk menyimpan barang.",
+  "Kita harus menjaga harta benda sekolah.",
+  "Buku panduan tugasan itu sangat berguna.",
+  "Senaman ialah sebahagian daripada rutin harian saya.",
+  "Murid-murid belajar aritmetik dalam kelas matematik.",
+  "Burung tekukur berkicau di atas pokok.",
+  "Murid-murid beratur tertib sebelum masuk ke kelas.",
+  "Semoga berkatlah ilmu yang kita pelajari.",
+  "Dia berusaha keras untuk raih kejayaan.",
+  "Kami membuat undian untuk memilih ketua kelas.",
+  "Dia berceramah tentang kesihatan di sekolah.",
+  "Setiap murid mempunyai peranan masing-masing.",
+  "Kita harus berbudi bahasa kepada semua orang.",
+  "Saya menumpang kereta kawan saya ke sekolah.",
+  "Kami menunggu bas di hentian bas.",
+  "Cikgu itu penuh dedikasi dalam mengajar.",
+  "Orang kelainan upaya juga perlu diberi peluang.",
+  "Ibu menyuap bubur kepada adik saya.",
+  "Kami berehat di kawasan redup di taman.",
+  "Dia seorang yang berbudi pekerti.",
+  "Sila menekan butang untuk membuka pintu."
+    ];
+
+    // ===== DOM & 语音 =====
+    let currentIndex = 0;
+    const questionDiv = document.getElementById('question');
+    const wordDiv = document.getElementById('word');
+    const meaningDiv = document.getElementById('meaning');
+
+    function setMeaning(text) { meaningDiv.textContent = text || ''; }
+
+    // 统一的朗读函数（默认：慢速 0.4、音高 0.6）
+    function speak(text, lang, preferNames = [], rate = 0.4, pitch = 0.6) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = rate;
+      u.pitch = pitch;
+
+      const trySpeak = () => {
+        const voices = speechSynthesis.getVoices() || [];
+        let candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith(lang.toLowerCase()));
+        // 如果没有马来语，回退印尼语
+        if (!candidates.length && lang.toLowerCase().startsWith('ms')) {
+          candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith('id'));
+          if (candidates.length) u.lang = 'id-ID';
+        }
+        for (const key of preferNames) {
+          const found = candidates.find(v => (v.name || '').toLowerCase().includes(key.toLowerCase()));
+          if (found) { u.voice = found; break; }
+        }
+        if (!u.voice && candidates.length) u.voice = candidates[0];
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      };
+
+      if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = trySpeak;
+      }
+      trySpeak();
+    }
+
+    // ===== 华文为主（按钮函数不再覆盖速率/音高）=====
+    function playChineseWord() {
+  const text = zh[currentIndex] || '';
+  const pinyin = py[currentIndex] || '';
+
+  setMeaning(pinyin);
+
+  speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+}
+
+    function showEnglish() {
+      const text = en[currentIndex] || '(待添加英文)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function playMalayWord(){
+
+const text = bm[currentIndex] || '';
+
+setMeaning('');
+
+speak(
+text,
+'ms-MY',
+['Microsoft','Malay','Bahasa']
+);
+
+}
+
+    function showChineseSentence() {
+      const text = zhSentences[currentIndex] || '(待添加华文造句)';
+      setMeaning(text);
+      speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+    }
+
+    function showEnglishSentence() {
+      const text = enSentences[currentIndex] || '(待添加英文句子)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function showMalaySentence() {
+      const text = msSentences[currentIndex] || '(待添加马来文句子)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Rizwan','Microsoft','Malay','Bahasa']);
+    }
+
+    function nextWord() {
+
+if(currentIndex < bm.length - 1){
+
+currentIndex++;
+
+updateQuestion();
+
+}
+
+}
+
+    function prevWord(){
+
+if(currentIndex > 0){
+
+currentIndex--;
+
+updateQuestion();
+
+}
+
+}
+
+    function updateQuestion() {
+  questionDiv.innerText = `题目 ${currentIndex + 1}`;
+  wordDiv.innerText = bm[currentIndex] || '—';
+  setMeaning('');
+}
+
+
+// ===== 搜索功能 =====
+function searchWord() {
+
+  const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+
+  if (!keyword) {
+    alert("请输入要搜索的词语");
+    return;
+  }
+
+
+  const index = bm.findIndex(word => 
+    word.toLowerCase() === keyword
+  );
+
+
+  if (index !== -1) {
+
+    currentIndex = index;
+    updateQuestion();
+
+  } else {
+
+    alert("没有找到：" + keyword);
+
+  }
+
+}
+
+function showChinese(){
+
+const text = zh[currentIndex] || '';
+
+setMeaning(text);
+
+speak(
+text,
+'zh-CN',
+['Xiaoyi','Microsoft']
+);
+
+}
+
+updateQuestion();
+  </script>
+</body>
+</html>

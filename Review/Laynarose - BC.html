@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>听写练习（华文优先）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background-color: #f0f0f0;
+    }
+    .container {
+      text-align: center; padding: 20px; background: #fff; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,.1); max-width: 720px; width: 92%;
+    }
+    .question { font-size: 28px; margin-bottom: 10px; }
+    .word { font-size: 34px; margin-bottom: 16px; }
+    .btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  margin-bottom: 14px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  font-size: 18px;
+  padding: 8px 12px;
+  width: 180px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.btn.search-btn {
+  background-color: #008cff;
+}
+
+.pinyin {
+  font-size: 18px;
+  color: #555;
+  margin-top: -5px;
+  margin-bottom: 25px;
+  font-style: italic;
+}
+
+    .btn {
+      font-size: 18px; padding: 10px 20px; border: none; border-radius: 8px;
+      background-color: #dc3545; color: #fff; cursor: pointer;
+    }
+    .btn.secondary { background-color: #6c757d; }
+    .btn.info { background-color: #dc3545; }
+    .btn.success { background-color: #dc3545; }
+    .btn.warning { background-color: #ffc107; color: #000; }
+    .meaning {
+      margin-top: 10px; font-size: 20px; background: #f8f9fa; border-radius: 8px;
+      padding: 12px; min-height: 60px; line-height: 1.6; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="search-box">
+  <input 
+    type="text" 
+    id="searchInput" 
+    placeholder=""
+  >
+
+  <button 
+    class="btn search-btn" 
+    onclick="searchWord()">
+    Search
+  </button>
+</div>
+    <div class="question" id="question">题目 1</div>
+    <div class="word" id="word">—</div>
+    
+    <div class="btns">
+      <!-- 华文优先 -->
+       <div class="btn-row">
+      <button class="btn" onclick="playChineseWord()">朗读</button>
+      <button class="btn success" onclick="showEnglish()">English</button>
+      <button class="btn info" onclick="showMalay()">BM</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn warning" onclick="showChineseSentence()">造句</button>
+      <button class="btn warning" onclick="showEnglishSentence()">Sentence</button>
+      <button class="btn warning" onclick="showMalaySentence()">Bina Ayat</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn secondary" onclick="prevWord()">上一题</button>
+      <button class="btn secondary" onclick="nextWord()">下一题</button>
+      </div>
+
+    <div class="meaning" id="meaning"></div>
+  </div>
+
+  <script>
+    // ====== 词库 ======
+    const zh = [
+      "本领",
+  "旅行",
+  "漂流",
+  "幼苗",
+  "传播",
+  "作呕",
+  "昏倒",
+  "臭味",
+  "懒惰",
+  "苍蝇",
+  "肮脏",
+  "垃圾",
+  "玻璃",
+  "价值",
+  "宝物",
+  "环保",
+  "节约",
+  "习惯",
+  "珍惜",
+  "浪费",
+  "气味",
+  "散发",
+  "油漆",
+  "制服",
+  "衣裤",
+  "谜语",
+  "蔬菜",
+  "野草",
+  "稻米",
+  "商贩",
+  "祖传",
+  "秘方",
+  "喉咙",
+  "孔雀",
+  "夹起",
+  "鳄鱼",
+  "准备",
+  "踏上",
+  "冷静",
+  "糊涂",
+  "墙壁",
+  "停止",
+  "着急",
+  "利用",
+  "诚心",
+  "功课",
+  "失望",
+  "流血",
+  "厨房",
+  "盘子"
+    ];
+
+    const py = [
+  "běn lǐng",
+  "lǚ xíng",
+  "piāo liú",
+  "yòu miáo",
+  "chuán bō",
+  "zuò ǒu",
+  "hūn dǎo",
+  "chòu wèi",
+  "lǎn duò",
+  "cāng ying",
+  "āng zāng",
+  "lā jī",
+  "bō li",
+  "jià zhí",
+  "bǎo wù",
+  "huán bǎo",
+  "jié yuē",
+  "xí guàn",
+  "zhēn xī",
+  "làng fèi",
+  "qì wèi",
+  "sàn fā",
+  "yóu qī",
+  "zhì fú",
+  "yī kù",
+  "mí yǔ",
+  "shū cài",
+  "yě cǎo",
+  "dào mǐ",
+  "shāng fàn",
+  "zǔ chuán",
+  "mì fāng",
+  "hóu lóng",
+  "kǒng què",
+  "jiā qǐ",
+  "è yú",
+  "zhǔn bèi",
+  "tà shàng",
+  "lěng jìng",
+  "hú tu",
+  "qiáng bì",
+  "tíng zhǐ",
+  "zháo jí",
+  "lì yòng",
+  "chéng xīn",
+  "gōng kè",
+  "shī wàng",
+  "liú xuè",
+  "chú fáng",
+  "pán zi"
+];
+
+    const en = [
+      "skill",
+  "travel",
+  "rafting",
+  "seedling",
+  "spread",
+  "nauseous",
+  "faint",
+  "bad smell",
+  "lazy",
+  "fly",
+  "dirty",
+  "rubbish",
+  "glass",
+  "value",
+  "treasure",
+  "eco-friendly",
+  "save",
+  "habit",
+  "cherish",
+  "waste",
+  "smell",
+  "give off",
+  "paint",
+  "uniform",
+  "clothes",
+  "riddle",
+  "vegetables",
+  "wild grass",
+  "rice",
+  "trader",
+  "ancestral",
+  "secret recipe",
+  "throat",
+  "peacock",
+  "pick up",
+  "crocodile",
+  "prepare",
+  "step on",
+  "calm",
+  "confused",
+  "wall",
+  "stop",
+  "anxious",
+  "use",
+  "sincere",
+  "homework",
+  "disappointed",
+  "bleed",
+  "kitchen",
+  "plate"
+    ];
+
+    const ms = [
+      "kemahiran",
+  "melancong",
+  "berakit",
+  "anak benih",
+  "menyebarkan",
+  "mual",
+  "pengsan",
+  "bau busuk",
+  "malas",
+  "lalat",
+  "kotor",
+  "sampah",
+  "kaca",
+  "nilai",
+  "harta karun",
+  "mesra alam",
+  "berjimat",
+  "tabiat",
+  "menghargai",
+  "membazir",
+  "bau",
+  "mengeluarkan",
+  "cat",
+  "pakaian seragam",
+  "pakaian",
+  "teka-teki",
+  "sayur-sayuran",
+  "rumput liar",
+  "beras",
+  "peniaga",
+  "warisan",
+  "resipi rahsia",
+  "tekak",
+  "merak",
+  "menjepit",
+  "buaya",
+  "bersedia",
+  "melangkah",
+  "tenang",
+  "keliru",
+  "dinding",
+  "berhenti",
+  "tergesa-gesa",
+  "menggunakan",
+  "ikhlas",
+  "kerja rumah",
+  "kecewa",
+  "berdarah",
+  "dapur",
+  "pinggan"
+    ];
+
+    const zhSentences = [
+      "他有画画的本领。",
+  "我们一家人去旅行。",
+  "我们在河里漂流。",
+  "幼苗需要水和阳光。",
+  "蜜蜂传播花粉。",
+  "这个味道让我作呕。",
+  "他因为太热而昏倒了。",
+  "垃圾桶传来臭味。",
+  "他很懒惰，常常不交功课。",
+  "苍蝇在食物上飞。",
+  "这个地方很肮脏。",
+  "请不要乱丢垃圾。",
+  "这个瓶子是玻璃做的。",
+  "这本书很有价值。",
+  "这个盒子里的宝物很贵重。",
+  "我们要保护环境，做个环保的人。",
+  "我们要节约用水。",
+  "早睡早起是个好习惯。",
+  "我们要珍惜食物。",
+  "不要浪费食物。",
+  "这朵花的气味很香。",
+  "花儿散发出香味。",
+  "爸爸在油漆墙壁。",
+  "我们穿制服去学校。",
+  "妈妈把我的衣裤收进衣柜。",
+  "我喜欢猜谜语。",
+  "我们应该多吃蔬菜。",
+  "花园里长了很多野草。",
+  "稻田里的稻米成熟了。",
+  "商贩在市场上卖菜。",
+  "这是我家祖传的食谱。",
+  "这是奶奶的秘方。",
+  "我的喉咙很痛。",
+  "孔雀的尾巴很美丽。",
+  "他用筷子夹起一块肉。",
+  "鳄鱼有锋利的牙齿。",
+  "我准备去学校。",
+  "他踏上舞台表演。",
+  "遇到事情要冷静。",
+  "他做事很糊涂。",
+  "墙壁上挂着一幅画。",
+  "雨停了，我们停止玩耍。",
+  "妈妈着急地找我。",
+  "我们利用旧物做手工。",
+  "他诚心地向老师道歉。",
+  "我每天按时完成功课。",
+  "他考试失败，很失望。",
+  "他的手指流血了。",
+  "妈妈在厨房煮饭。",
+  "我把食物放在盘子上。"
+    ];
+
+    const enSentences = [
+      "He has the skill of drawing.",
+  "My family goes travelling.",
+  "We go rafting in the river.",
+  "Seedlings need water and sunlight.",
+  "Bees spread pollen.",
+  "This smell makes me nauseous.",
+  "He fainted because it was too hot.",
+  "The rubbish bin gives off a bad smell.",
+  "He is lazy and often does not do his homework.",
+  "The fly flies on the food.",
+  "This place is very dirty.",
+  "Please do not throw rubbish everywhere.",
+  "This bottle is made of glass.",
+  "This book is very valuable.",
+  "The treasure in this box is very precious.",
+  "We must protect the environment and be eco-friendly.",
+  "We must save water.",
+  "Sleeping early and waking up early is a good habit.",
+  "We must cherish food.",
+  "Do not waste food.",
+  "This flower's smell is very fragrant.",
+  "The flower gives off a fragrant smell.",
+  "Father is painting the wall.",
+  "We wear a uniform to school.",
+  "Mother keeps my clothes in the wardrobe.",
+  "I like to guess riddles.",
+  "We should eat more vegetables.",
+  "Many wild grasses grow in the garden.",
+  "The paddy in the field has become rice.",
+  "The trader sells vegetables at the market.",
+  "This is my family's ancestral recipe.",
+  "This is grandmother's secret recipe.",
+  "My throat is very painful.",
+  "The peacock's tail is very beautiful.",
+  "He picked up a piece of meat with chopsticks.",
+  "The crocodile has sharp teeth.",
+  "I am preparing to go to school.",
+  "He stepped on the stage to perform.",
+  "We must be calm when facing problems.",
+  "He is very confused in his work.",
+  "There is a picture on the wall.",
+  "The rain has stopped, we stopped playing.",
+  "Mother is anxiously looking for me.",
+  "We use old things to make crafts.",
+  "He sincerely apologised to the teacher.",
+  "I finish my homework on time every day.",
+  "He was disappointed because he failed the exam.",
+  "His finger is bleeding.",
+  "Mother is cooking in the kitchen.",
+  "I put the food on the plate."
+    ];
+
+    const msSentences = [
+      "Dia mempunyai kemahiran melukis.",
+  "Keluarga saya pergi melancong.",
+  "Kami berakit di sungai.",
+  "Anak benih memerlukan air dan cahaya matahari.",
+  "Lebah menyebarkan debunga.",
+  "Bau ini membuat saya mual.",
+  "Dia pengsan kerana terlalu panas.",
+  "Tong sampah mengeluarkan bau busuk.",
+  "Dia malas dan selalu tidak menyiapkan kerja rumah.",
+  "Lalat terbang di atas makanan.",
+  "Tempat ini sangat kotor.",
+  "Jangan buang sampah merata-rata.",
+  "Botol ini diperbuat daripada kaca.",
+  "Buku ini sangat bernilai.",
+  "Harta karun di dalam kotak ini sangat berharga.",
+  "Kita harus melindungi alam sekitar dan menjadi orang yang mesra alam.",
+  "Kita harus berjimat menggunakan air.",
+  "Tidur awal dan bangun awal ialah tabiat yang baik.",
+  "Kita harus menghargai makanan.",
+  "Jangan membazir makanan.",
+  "Bau bunga ini sangat wangi.",
+  "Bunga mengeluarkan bau harum.",
+  "Ayah sedang mengecat dinding.",
+  "Kami memakai pakaian seragam ke sekolah.",
+  "Ibu menyimpan pakaian saya ke dalam almari.",
+  "Saya suka meneka teka-teki.",
+  "Kita harus makan lebih banyak sayur-sayuran.",
+  "Banyak rumput liar tumbuh di taman.",
+  "Padi di sawah sudah menjadi beras.",
+  "Peniaga menjual sayur di pasar.",
+  "Ini ialah resipi warisan keluarga saya.",
+  "Ini ialah resipi rahsia nenek.",
+  "Tekak saya sangat sakit.",
+  "Ekor merak sangat cantik.",
+  "Dia menjepit seketul daging dengan penyepit.",
+  "Buaya mempunyai gigi yang tajam.",
+  "Saya bersedia untuk pergi ke sekolah.",
+  "Dia melangkah ke atas pentas untuk membuat persembahan.",
+  "Kita harus tenang apabila menghadapi masalah.",
+  "Dia sangat keliru dalam kerja.",
+  "Terdapat sebuah gambar di atas dinding.",
+  "Hujan sudah berhenti, kami berhenti bermain.",
+  "Ibu tergesa-gesa mencari saya.",
+  "Kami menggunakan barang lama untuk membuat kraf.",
+  "Dia ikhlas meminta maaf kepada cikgu.",
+  "Saya menyiapkan kerja rumah pada masanya setiap hari.",
+  "Dia kecewa kerana gagal dalam peperiksaan.",
+  "Jarinya berdarah.",
+  "Ibu sedang memasak di dapur.",
+  "Saya meletakkan makanan di atas pinggan."
+    ];
+
+    // ===== DOM & 语音 =====
+    let currentIndex = 0;
+    const questionDiv = document.getElementById('question');
+    const wordDiv = document.getElementById('word');
+    const pinyinDiv = document.getElementById('pinyin');
+    const meaningDiv = document.getElementById('meaning');
+
+    function setMeaning(text) { meaningDiv.textContent = text || ''; }
+
+    // 统一的朗读函数（默认：慢速 0.4、音高 0.6）
+    function speak(text, lang, preferNames = [], rate = 0.4, pitch = 0.6) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = rate;
+      u.pitch = pitch;
+
+      const trySpeak = () => {
+        const voices = speechSynthesis.getVoices() || [];
+        let candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith(lang.toLowerCase()));
+        // 如果没有马来语，回退印尼语
+        if (!candidates.length && lang.toLowerCase().startsWith('ms')) {
+          candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith('id'));
+          if (candidates.length) u.lang = 'id-ID';
+        }
+        for (const key of preferNames) {
+          const found = candidates.find(v => (v.name || '').toLowerCase().includes(key.toLowerCase()));
+          if (found) { u.voice = found; break; }
+        }
+        if (!u.voice && candidates.length) u.voice = candidates[0];
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      };
+
+      if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = trySpeak;
+      }
+      trySpeak();
+    }
+
+    // ===== 华文为主（按钮函数不再覆盖速率/音高）=====
+    function playChineseWord() {
+  const text = zh[currentIndex] || '';
+  const pinyin = py[currentIndex] || '';
+
+  setMeaning(pinyin);
+
+  speak(text, 'zh-CN', ['Xiaoyi','Microsoft','male']);
+}
+
+    function showEnglish() {
+      const text = en[currentIndex] || '(待添加英文)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function showMalay() {
+      const text = ms[currentIndex] || '(待添加马来文)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Malay','Bahasa','Microsoft']);
+    }
+
+    function showChineseSentence() {
+      const text = zhSentences[currentIndex] || '(待添加华文造句)';
+      setMeaning(text);
+      speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+    }
+
+    function showEnglishSentence() {
+      const text = enSentences[currentIndex] || '(待添加英文句子)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft']);
+    }
+
+    function showMalaySentence() {
+      const text = msSentences[currentIndex] || '(待添加马来文句子)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Malay','Bahasa','Microsoft']);
+    }
+
+    function nextWord() {
+      if (currentIndex < zh.length - 1) {
+        currentIndex++;
+        updateQuestion();
+      }
+    }
+
+    function prevWord() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateQuestion();
+      }
+    }
+
+    function updateQuestion() {
+  questionDiv.innerText = `题目 ${currentIndex + 1}`;
+  wordDiv.innerText = zh[currentIndex] || '—';
+  setMeaning('');
+}
+
+
+// ===== 搜索功能 =====
+function searchWord() {
+
+  const keyword = document.getElementById("searchInput").value.trim();
+
+  if (!keyword) {
+    alert("请输入要搜索的词语");
+    return;
+  }
+
+
+  const index = zh.indexOf(keyword);
+
+
+  if (index !== -1) {
+
+    currentIndex = index;
+    updateQuestion();
+
+  } else {
+
+    alert("没有找到：" + keyword);
+
+  }
+
+}
+
+
+updateQuestion();
+  </script>
+</body>
+</html>

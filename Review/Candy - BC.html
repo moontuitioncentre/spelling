@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>听写练习（华文优先）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background-color: #f0f0f0;
+    }
+    .container {
+      text-align: center; padding: 20px; background: #fff; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,.1); max-width: 720px; width: 92%;
+    }
+    .question { font-size: 28px; margin-bottom: 10px; }
+    .word { font-size: 34px; margin-bottom: 16px; }
+    .btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  margin-bottom: 14px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  font-size: 18px;
+  padding: 8px 12px;
+  width: 180px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.btn.search-btn {
+  background-color: #008cff;
+}
+
+.pinyin {
+  font-size: 18px;
+  color: #555;
+  margin-top: -5px;
+  margin-bottom: 25px;
+  font-style: italic;
+}
+
+    .btn {
+      font-size: 18px; padding: 10px 20px; border: none; border-radius: 8px;
+      background-color: #dc3545; color: #fff; cursor: pointer;
+    }
+    .btn.secondary { background-color: #6c757d; }
+    .btn.info { background-color: #dc3545; }
+    .btn.success { background-color: #dc3545; }
+    .btn.warning { background-color: #ffc107; color: #000; }
+    .meaning {
+      margin-top: 10px; font-size: 20px; background: #f8f9fa; border-radius: 8px;
+      padding: 12px; min-height: 60px; line-height: 1.6; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="search-box">
+  <input 
+    type="text" 
+    id="searchInput" 
+    placeholder=""
+  >
+
+  <button 
+    class="btn search-btn" 
+    onclick="searchWord()">
+    Search
+  </button>
+</div>
+    <div class="question" id="question">题目 1</div>
+    <div class="word" id="word">—</div>
+    
+    <div class="btns">
+      <!-- 华文优先 -->
+       <div class="btn-row">
+      <button class="btn" onclick="playChineseWord()">朗读</button>
+      <button class="btn success" onclick="showEnglish()">English</button>
+      <button class="btn info" onclick="showMalay()">BM</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn warning" onclick="showChineseSentence()">造句</button>
+      <button class="btn warning" onclick="showEnglishSentence()">Sentence</button>
+      <button class="btn warning" onclick="showMalaySentence()">Bina Ayat</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn secondary" onclick="prevWord()">上一题</button>
+      <button class="btn secondary" onclick="nextWord()">下一题</button>
+      </div>
+
+    <div class="meaning" id="meaning"></div>
+  </div>
+
+  <script>
+    // ====== 词库 ======
+    const zh = [
+      "孩子",
+  "晚上",
+  "灯光",
+  "干净",
+  "玩耍",
+  "生气",
+  "朋友",
+  "美丽",
+  "停电",
+  "知道",
+  "关心",
+  "追赶",
+  "因为",
+  "今天",
+  "果园",
+  "害怕",
+  "彩虹",
+  "星星",
+  "正在",
+  "谈天",
+  "容易",
+  "吃",
+  "采",
+  "纸张",
+  "扫"
+    ];
+
+    const py = [
+  "hái zi",
+  "wǎn shang",
+  "dēng guāng",
+  "gān jìng",
+  "wán shuǎ",
+  "shēng qì",
+  "péng you",
+  "měi lì",
+  "tíng diàn",
+  "zhī dào",
+  "guān xīn",
+  "zhuī gǎn",
+  "yīn wèi",
+  "jīn tiān",
+  "guǒ yuán",
+  "hài pà",
+  "cǎi hóng",
+  "xīng xing",
+  "zhèng zài",
+  "tán tiān",
+  "róng yì",
+  "chī",
+  "cǎi",
+  "zhǐ zhāng",
+  "sǎo"
+];
+
+    const en = [
+      "child",
+  "night",
+  "light",
+  "clean",
+  "play",
+  "angry",
+  "friend",
+  "beautiful",
+  "power outage",
+  "know",
+  "care",
+  "chase",
+  "because",
+  "today",
+  "orchard",
+  "afraid",
+  "rainbow",
+  "star",
+  "in the middle of",
+  "chat",
+  "easy",
+  "eat",
+  "pick",
+  "paper",
+  "sweep"
+    ];
+
+    const ms = [
+      "kanak-kanak",
+  "malam",
+  "cahaya lampu",
+  "bersih",
+  "bermain",
+  "marah",
+  "kawan",
+  "cantik",
+  "gangguan elektrik",
+  "tahu",
+  "mengambil berat",
+  "mengejar",
+  "kerana",
+  "hari ini",
+  "kebun buah-buahan",
+  "takut",
+  "pelangi",
+  "bintang",
+  "sedang",
+  "bersembang",
+  "senang",
+  "makan",
+  "memetik",
+  "kertas",
+  "menyapu"
+    ];
+
+    const zhSentences = [
+      "那个孩子很可爱。",
+  "晚上，我在家里做功课。",
+  "这里的灯光很亮。",
+  "我的房间很干净。",
+  "弟弟在公园里玩耍。",
+  "妈妈生气我太晚回家。",
+  "我和朋友一起上学。",
+  "这朵花很美丽。",
+  "今天停电了，我们不能看电视。",
+  "我知道这个问题的答案。",
+  "妈妈很关心我的健康。",
+  "小狗在追赶小猫。",
+  "因为下雨，所以我们不出门。",
+  "今天是我的生日。",
+  "爷爷的果园里种了很多水果。",
+  "我很害怕打雷。",
+  "雨后的天空出现了一道彩虹。",
+  "晚上，天空有很多星星。",
+  "弟弟正在做功课。",
+  "我和朋友在树下谈天。",
+  "这道题很容易。",
+  "我喜欢吃苹果。",
+  "妈妈在果园里采水果。",
+  "我用纸张折了一架飞机。",
+  "我在扫地板。"
+    ];
+
+    const enSentences = [
+      "That child is very cute.",
+  "At night, I do my homework at home.",
+  "The light here is very bright.",
+  "My room is very clean.",
+  "My brother plays in the park.",
+  "Mother is angry because I came home too late.",
+  "I go to school with my friend.",
+  "This flower is very beautiful.",
+  "There is a power outage today, we cannot watch television.",
+  "I know the answer to this question.",
+  "Mother cares a lot about my health.",
+  "The puppy is chasing the kitten.",
+  "Because it is raining, we do not go out.",
+  "Today is my birthday.",
+  "Grandfather's orchard grows many fruits.",
+  "I am very afraid of thunder.",
+  "After the rain, a rainbow appeared in the sky.",
+  "At night, there are many stars in the sky.",
+  "My brother is doing his homework.",
+  "My friend and I chat under the tree.",
+  "This question is very easy.",
+  "I like to eat apples.",
+  "Mother picks fruits in the orchard.",
+  "I folded a paper aeroplane using paper.",
+  "I am sweeping the floor."
+    ];
+
+    const msSentences = [
+      "Kanak-kanak itu sangat comel.",
+  "Pada waktu malam, saya membuat kerja rumah di rumah.",
+  "Cahaya lampu di sini sangat terang.",
+  "Bilik saya sangat bersih.",
+  "Adik bermain di taman.",
+  "Ibu marah kerana saya balik terlalu lewat.",
+  "Saya pergi ke sekolah bersama kawan saya.",
+  "Bunga ini sangat cantik.",
+  "Hari ini berlaku gangguan elektrik, kami tidak boleh menonton televisyen.",
+  "Saya tahu jawapan kepada soalan ini.",
+  "Ibu sangat mengambil berat tentang kesihatan saya.",
+  "Anjing kecil itu mengejar kucing.",
+  "Kerana hujan, kami tidak keluar rumah.",
+  "Hari ini ialah hari jadi saya.",
+  "Kebun buah-buahan atuk menanam banyak buah.",
+  "Saya sangat takut akan guruh.",
+  "Selepas hujan, satu pelangi muncul di langit.",
+  "Pada waktu malam, terdapat banyak bintang di langit.",
+  "Adik sedang membuat kerja rumah.",
+  "Saya dan kawan saya bersembang di bawah pokok.",
+  "Soalan ini sangat senang.",
+  "Saya suka makan epal.",
+  "Ibu memetik buah di kebun.",
+  "Saya melipat sebuah kapal terbang menggunakan kertas.",
+  "Saya sedang menyapu lantai."
+    ];
+
+    // ===== DOM & 语音 =====
+    let currentIndex = 0;
+    const questionDiv = document.getElementById('question');
+    const wordDiv = document.getElementById('word');
+    const pinyinDiv = document.getElementById('pinyin');
+    const meaningDiv = document.getElementById('meaning');
+
+    function setMeaning(text) { meaningDiv.textContent = text || ''; }
+
+    // 统一的朗读函数（默认：慢速 0.4、音高 0.6）
+    function speak(text, lang, preferNames = [], rate = 0.4, pitch = 0.6) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = rate;
+      u.pitch = pitch;
+
+      const trySpeak = () => {
+        const voices = speechSynthesis.getVoices() || [];
+        let candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith(lang.toLowerCase()));
+        // 如果没有马来语，回退印尼语
+        if (!candidates.length && lang.toLowerCase().startsWith('ms')) {
+          candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith('id'));
+          if (candidates.length) u.lang = 'id-ID';
+        }
+        for (const key of preferNames) {
+          const found = candidates.find(v => (v.name || '').toLowerCase().includes(key.toLowerCase()));
+          if (found) { u.voice = found; break; }
+        }
+        if (!u.voice && candidates.length) u.voice = candidates[0];
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      };
+
+      if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = trySpeak;
+      }
+      trySpeak();
+    }
+
+    // ===== 华文为主（按钮函数不再覆盖速率/音高）=====
+    function playChineseWord() {
+  const text = zh[currentIndex] || '';
+  const pinyin = py[currentIndex] || '';
+
+  setMeaning(pinyin);
+
+  speak(text, 'zh-CN', ['Xiaoyi','Microsoft','male']);
+}
+
+    function showEnglish() {
+      const text = en[currentIndex] || '(待添加英文)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function showMalay() {
+      const text = ms[currentIndex] || '(待添加马来文)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Malay','Bahasa','Microsoft']);
+    }
+
+    function showChineseSentence() {
+      const text = zhSentences[currentIndex] || '(待添加华文造句)';
+      setMeaning(text);
+      speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+    }
+
+    function showEnglishSentence() {
+      const text = enSentences[currentIndex] || '(待添加英文句子)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft']);
+    }
+
+    function showMalaySentence() {
+      const text = msSentences[currentIndex] || '(待添加马来文句子)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Malay','Bahasa','Microsoft']);
+    }
+
+    function nextWord() {
+      if (currentIndex < zh.length - 1) {
+        currentIndex++;
+        updateQuestion();
+      }
+    }
+
+    function prevWord() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateQuestion();
+      }
+    }
+
+    function updateQuestion() {
+  questionDiv.innerText = `题目 ${currentIndex + 1}`;
+  wordDiv.innerText = zh[currentIndex] || '—';
+  setMeaning('');
+}
+
+
+// ===== 搜索功能 =====
+function searchWord() {
+
+  const keyword = document.getElementById("searchInput").value.trim();
+
+  if (!keyword) {
+    alert("请输入要搜索的词语");
+    return;
+  }
+
+
+  const index = zh.indexOf(keyword);
+
+
+  if (index !== -1) {
+
+    currentIndex = index;
+    updateQuestion();
+
+  } else {
+
+    alert("没有找到：" + keyword);
+
+  }
+
+}
+
+
+updateQuestion();
+  </script>
+</body>
+</html>

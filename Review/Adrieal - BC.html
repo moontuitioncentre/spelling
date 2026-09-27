@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>听写练习（华文优先）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background-color: #f0f0f0;
+    }
+    .container {
+      text-align: center; padding: 20px; background: #fff; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,.1); max-width: 720px; width: 92%;
+    }
+    .question { font-size: 28px; margin-bottom: 10px; }
+    .word { font-size: 34px; margin-bottom: 16px; }
+    .btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  margin-bottom: 14px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  font-size: 18px;
+  padding: 8px 12px;
+  width: 180px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.btn.search-btn {
+  background-color: #008cff;
+}
+
+.pinyin {
+  font-size: 18px;
+  color: #555;
+  margin-top: -5px;
+  margin-bottom: 25px;
+  font-style: italic;
+}
+
+    .btn {
+      font-size: 18px; padding: 10px 20px; border: none; border-radius: 8px;
+      background-color: #dc3545; color: #fff; cursor: pointer;
+    }
+    .btn.secondary { background-color: #6c757d; }
+    .btn.info { background-color: #dc3545; }
+    .btn.success { background-color: #dc3545; }
+    .btn.warning { background-color: #ffc107; color: #000; }
+    .meaning {
+      margin-top: 10px; font-size: 20px; background: #f8f9fa; border-radius: 8px;
+      padding: 12px; min-height: 60px; line-height: 1.6; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="search-box">
+  <input 
+    type="text" 
+    id="searchInput" 
+    placeholder=""
+  >
+
+  <button 
+    class="btn search-btn" 
+    onclick="searchWord()">
+    Search
+  </button>
+</div>
+    <div class="question" id="question">题目 1</div>
+    <div class="word" id="word">—</div>
+    
+    <div class="btns">
+      <!-- 华文优先 -->
+       <div class="btn-row">
+      <button class="btn" onclick="playChineseWord()">朗读</button>
+      <button class="btn success" onclick="showEnglish()">English</button>
+      <button class="btn info" onclick="showMalay()">BM</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn warning" onclick="showChineseSentence()">造句</button>
+      <button class="btn warning" onclick="showEnglishSentence()">Sentence</button>
+      <button class="btn warning" onclick="showMalaySentence()">Bina Ayat</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn secondary" onclick="prevWord()">上一题</button>
+      <button class="btn secondary" onclick="nextWord()">下一题</button>
+      </div>
+
+    <div class="meaning" id="meaning"></div>
+  </div>
+
+  <script>
+    // ====== 词库 ======
+    const zh = [
+      "唇齿留香",
+  "辛辣",
+  "负担",
+  "卷起来",
+  "弱点",
+  "省钱",
+  "浸泡",
+  "凡是",
+  "书签",
+  "记录",
+  "最初",
+  "北斗七星",
+  "贵重",
+  "贪心",
+  "喘气",
+  "周末",
+  "令我",
+  "说谎",
+  "太棒了",
+  "飞扬",
+  "派人",
+  "教训",
+  "努力",
+  "英勇",
+  "你争我抢",
+  "优良",
+  "清楚",
+  "曾经",
+  "拳头",
+  "处罚"
+    ];
+
+    const py = [
+  "chún chǐ liú xiāng",
+  "xīn là",
+  "fù dān",
+  "juǎn qǐ lái",
+  "ruò diǎn",
+  "shěng qián",
+  "jìn pào",
+  "fán shì",
+  "shū qiān",
+  "jì lù",
+  "zuì chū",
+  "běi dǒu qī xīng",
+  "guì zhòng",
+  "tān xīn",
+  "chuǎn qì",
+  "zhōu mò",
+  "lìng wǒ",
+  "shuō huǎng",
+  "tài bàng le",
+  "fēi yáng",
+  "pài rén",
+  "jiào xùn",
+  "nǔ lì",
+  "yīng yǒng",
+  "nǐ zhēng wǒ qiǎng",
+  "yōu liáng",
+  "qīng chǔ",
+  "céng jīng",
+  "quán tóu",
+  "chǔ fá"
+];
+
+    const en = [
+      "lingering fragrance",
+  "spicy",
+  "burden",
+  "roll up",
+  "weakness",
+  "save money",
+  "soak",
+  "all",
+  "bookmark",
+  "record",
+  "initially",
+  "Big Dipper",
+  "precious",
+  "greedy",
+  "gasp",
+  "weekend",
+  "make me",
+  "lie",
+  "wonderful",
+  "flutter",
+  "send someone",
+  "lesson",
+  "effort",
+  "brave",
+  "compete fiercely",
+  "excellent",
+  "clear",
+  "once",
+  "fist",
+  "punishment"
+    ];
+
+    const ms = [
+      "lazat hingga ke bibir",
+  "pedas",
+  "beban",
+  "menggulung",
+  "kelemahan",
+  "menjimatkan wang",
+  "merendam",
+  "semua",
+  "penanda buku",
+  "rekod",
+  "pada mulanya",
+  "Bintang Tujuh",
+  "berharga",
+  "tamak",
+  "termengah-mengah",
+  "hujung minggu",
+  "menyebabkan saya",
+  "berbohong",
+  "hebat",
+  "berkibar",
+  "menghantar orang",
+  "pengajaran",
+  "berusaha",
+  "berani",
+  "berebut-rebut",
+  "cemerlang",
+  "jelas",
+  "pernah",
+  "penumbuk",
+  "hukuman"
+    ];
+
+    const zhSentences = [
+      "这碗面很香，吃完后唇齿留香。",
+  "我不喜欢吃辛辣的食物。",
+  "功课太多，对我来说是一种负担。",
+  "妈妈把报纸卷起来放在桌上。",
+  "我的弱点是数学不好。",
+  "为了省钱，我很少买零食。",
+  "妈妈把菜浸泡在水里。",
+  "凡是迟到的人都要罚站。",
+  "我送了一个书签给好朋友。",
+  "老师记录了我们每个人的分数。",
+  "我最初不喜欢吃菜，现在很喜欢。",
+  "晚上，我在天空看到了北斗七星。",
+  "这个手表很贵重，不能弄丢。",
+  "做人不要太贪心。",
+  "跑完步后，他一直喘气。",
+  "周末我要和家人去公园。",
+  "这件事令我很难过。",
+  "说谎是不好的行为。",
+  "你考到一百分，太棒了！",
+  "国旗在风中飞扬。",
+  "老师派人去拿作业本。",
+  "这次比赛给了我一个教训。",
+  "我要努力学习，考到好成绩。",
+  "那位警察很英勇，救了一个小孩。",
+  "同学们你争我抢地回答问题。",
+  "他的成绩很优良。",
+  "请你把话说清楚。",
+  "我曾经去过动物园。",
+  "他握紧拳头，准备比赛。",
+  "做错事就会受到处罚。"
+    ];
+
+    const enSentences = [
+      "This bowl of noodles smells good and leaves a lingering taste.",
+  "I do not like spicy food.",
+  "Too much homework is a burden to me.",
+  "Mother rolled up the newspaper and put it on the table.",
+  "My weakness is that I am not good at Maths.",
+  "I seldom buy snacks to save money.",
+  "Mother soaked the vegetables in water.",
+  "All those who are late must stand as a punishment.",
+  "I gave a bookmark to my good friend.",
+  "The teacher recorded everyone's marks.",
+  "At first I did not like vegetables, but now I do.",
+  "At night, I saw the Big Dipper in the sky.",
+  "This watch is very precious. Do not lose it.",
+  "Do not be too greedy.",
+  "After running, he kept gasping for breath.",
+  "I will go to the park with my family this weekend.",
+  "This matter makes me very sad.",
+  "Lying is a bad habit.",
+  "You got full marks — that's wonderful!",
+  "The flag is fluttering in the wind.",
+  "The teacher sent someone to get the exercise books.",
+  "This competition taught me a lesson.",
+  "I will study hard to get good results.",
+  "That policeman was very brave and saved a child.",
+  "The students competed to answer the questions.",
+  "His results are excellent.",
+  "Please speak clearly.",
+  "I have been to the zoo before.",
+  "He clenched his fist and got ready for the match.",
+  "If you do something wrong, you will be punished."
+    ];
+
+    const msSentences = [
+      "Mee ini sangat wangi dan meninggalkan rasa yang lazat.",
+  "Saya tidak suka makan makanan yang pedas.",
+  "Kerja rumah yang terlalu banyak menjadi beban bagi saya.",
+  "Ibu menggulung surat khabar dan meletakkannya di atas meja.",
+  "Kelemahan saya ialah saya tidak pandai dalam Matematik.",
+  "Saya jarang membeli makanan ringan untuk menjimatkan wang.",
+  "Ibu merendam sayur-sayuran di dalam air.",
+  "Semua orang yang lewat mesti berdiri sebagai hukuman.",
+  "Saya memberi sebuah penanda buku kepada kawan baik saya.",
+  "Guru merekodkan markah setiap murid.",
+  "Pada mulanya saya tidak suka makan sayur, tetapi sekarang saya suka.",
+  "Pada waktu malam, saya melihat Bintang Tujuh di langit.",
+  "Jam ini sangat berharga. Jangan hilangkan.",
+  "Jangan terlalu tamak.",
+  "Selepas berlari, dia termengah-mengah.",
+  "Saya akan pergi ke taman bersama keluarga saya pada hujung minggu ini.",
+  "Perkara ini menyebabkan saya sangat sedih.",
+  "Berbohong adalah tabiat yang buruk.",
+  "Kamu mendapat markah penuh — hebat!",
+  "Bendera itu berkibar ditiup angin.",
+  "Guru menghantar seseorang untuk mengambil buku latihan.",
+  "Pertandingan ini memberi saya satu pengajaran.",
+  "Saya akan belajar bersungguh-sungguh untuk mendapat keputusan yang baik.",
+  "Polis itu sangat berani dan menyelamatkan seorang kanak-kanak.",
+  "Murid-murid berebut-rebut untuk menjawab soalan.",
+  "Keputusannya cemerlang.",
+  "Sila bercakap dengan jelas.",
+  "Saya pernah pergi ke zoo.",
+  "Dia mengepal penumbuknya dan bersedia untuk perlawanan.",
+  "Jika kamu melakukan kesalahan, kamu akan dihukum."
+    ];
+
+    // ===== DOM & 语音 =====
+    let currentIndex = 0;
+    const questionDiv = document.getElementById('question');
+    const wordDiv = document.getElementById('word');
+    const pinyinDiv = document.getElementById('pinyin');
+    const meaningDiv = document.getElementById('meaning');
+
+    function setMeaning(text) { meaningDiv.textContent = text || ''; }
+
+    // 统一的朗读函数（默认：慢速 0.4、音高 0.6）
+    function speak(text, lang, preferNames = [], rate = 0.4, pitch = 0.6) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = rate;
+      u.pitch = pitch;
+
+      const trySpeak = () => {
+        const voices = speechSynthesis.getVoices() || [];
+        let candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith(lang.toLowerCase()));
+        // 如果没有马来语，回退印尼语
+        if (!candidates.length && lang.toLowerCase().startsWith('ms')) {
+          candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith('id'));
+          if (candidates.length) u.lang = 'id-ID';
+        }
+        for (const key of preferNames) {
+          const found = candidates.find(v => (v.name || '').toLowerCase().includes(key.toLowerCase()));
+          if (found) { u.voice = found; break; }
+        }
+        if (!u.voice && candidates.length) u.voice = candidates[0];
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      };
+
+      if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = trySpeak;
+      }
+      trySpeak();
+    }
+
+    // ===== 华文为主（按钮函数不再覆盖速率/音高）=====
+    function playChineseWord() {
+  const text = zh[currentIndex] || '';
+  const pinyin = py[currentIndex] || '';
+
+  setMeaning(pinyin);
+
+  speak(text, 'zh-CN', ['Xiaoyi','Microsoft','male']);
+}
+
+    function showEnglish() {
+      const text = en[currentIndex] || '(待添加英文)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function showMalay() {
+      const text = ms[currentIndex] || '(待添加马来文)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Malay','Bahasa','Microsoft']);
+    }
+
+    function showChineseSentence() {
+      const text = zhSentences[currentIndex] || '(待添加华文造句)';
+      setMeaning(text);
+      speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+    }
+
+    function showEnglishSentence() {
+      const text = enSentences[currentIndex] || '(待添加英文句子)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft']);
+    }
+
+    function showMalaySentence() {
+      const text = msSentences[currentIndex] || '(待添加马来文句子)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Malay','Bahasa','Microsoft']);
+    }
+
+    function nextWord() {
+      if (currentIndex < zh.length - 1) {
+        currentIndex++;
+        updateQuestion();
+      }
+    }
+
+    function prevWord() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateQuestion();
+      }
+    }
+
+    function updateQuestion() {
+  questionDiv.innerText = `题目 ${currentIndex + 1}`;
+  wordDiv.innerText = zh[currentIndex] || '—';
+  setMeaning('');
+}
+
+
+// ===== 搜索功能 =====
+function searchWord() {
+
+  const keyword = document.getElementById("searchInput").value.trim();
+
+  if (!keyword) {
+    alert("请输入要搜索的词语");
+    return;
+  }
+
+
+  const index = zh.indexOf(keyword);
+
+
+  if (index !== -1) {
+
+    currentIndex = index;
+    updateQuestion();
+
+  } else {
+
+    alert("没有找到：" + keyword);
+
+  }
+
+}
+
+
+updateQuestion();
+  </script>
+</body>
+</html>

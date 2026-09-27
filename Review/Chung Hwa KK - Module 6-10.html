@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>听写练习（English）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background-color: #f0f0f0;
+    }
+    .container {
+      text-align: center; padding: 20px; background: #fff; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,.1); max-width: 720px; width: 92%;
+    }
+    .question { font-size: 28px; margin-bottom: 10px; }
+    .word { font-size: 34px; margin-bottom: 16px; }
+    .btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  margin-bottom: 14px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  font-size: 18px;
+  padding: 8px 12px;
+  width: 180px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.btn.search-btn {
+  background-color: #008cff;
+}
+
+    .btn {
+      font-size: 18px; padding: 10px 20px; border: none; border-radius: 8px;
+      background-color: #dc3545; color: #fff; cursor: pointer;
+    }
+    .btn.secondary { background-color: #6c757d; }
+    .btn.info { background-color: #dc3545; }
+    .btn.success { background-color: #dc3545; }
+    .btn.warning { background-color: #ffc107; color: #000; }
+    .meaning {
+      margin-top: 10px; font-size: 20px; background: #f8f9fa; border-radius: 8px;
+      padding: 12px; min-height: 60px; line-height: 1.6; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="search-box">
+  <input 
+  type="text" 
+  id="searchInput" 
+  placeholder=""
+  onkeydown="if(event.key === 'Enter') searchWord();"
+>
+
+  <button 
+    class="btn search-btn" 
+    onclick="searchWord()">
+    Search
+  </button>
+</div>
+    <div class="question" id="question">题目 1</div>
+    <div class="word" id="word">—</div>
+    
+    <div class="btns">
+      <!-- 华文优先 -->
+       <div class="btn-row">
+      <button class="btn" onclick="playEnglishWord()">🔊</button>
+      <button class="btn success" onclick="playMalayWord()">Bahasa Melayu</button>
+      <button class="btn info" onclick="showChinese()">华文</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn warning" onclick="showEnglishSentence()">Sentence</button>
+      <button class="btn warning" onclick="showMalaySentence()">Bina Ayat</button>      
+      <button class="btn warning" onclick="showChineseSentence()">造句</button>
+      
+      </div>
+
+      <div class="btn-row">
+      <button class="btn secondary" onclick="prevWord()">上一题</button>
+      <button class="btn secondary" onclick="nextWord()">下一题</button>
+      </div>
+
+</div>
+
+    <div class="meaning" id="meaning"></div>
+
+  </div>
+
+  <script>
+    // ====== 词库 ======
+    const zh = [
+      "系紧",
+  "头盔",
+  "车把",
+  "安全",
+  "离开",
+  "到达",
+  "益处",
+  "舒适",
+  "游客",
+  "交通",
+  "司机",
+  "滑雪",
+  "明白",
+  "便宜",
+  "昂贵",
+  "相似",
+  "闪闪发光",
+  "疲倦",
+  "黑豹",
+  "蟒蛇",
+  "担心",
+  "喊叫",
+  "携带",
+  "受伤",
+  "整个",
+  "社区",
+  "手电筒",
+  "花生",
+  "再循环",
+  "纸",
+  "金属",
+  "玻璃",
+  "塑料",
+  "环境",
+  "罐子",
+  "丢失",
+  "噪音",
+  "声音",
+  "有帮助",
+  "大猩猩",
+  "蜗牛",
+  "熊猫",
+  "犀牛",
+  "专家",
+  "王国",
+  "花盆",
+  "聪明",
+  "恐龙",
+  "危险",
+  "调查",
+  "鸟嘴",
+  "百万",
+  "杂食动物",
+  "肉食动物",
+  "捕猎",
+  "竹子",
+  "药",
+  "村庄",
+  "承诺",
+  "决定",
+  "活跃",
+  "容易",
+  "困难",
+  "受欢迎",
+  "讨厌",
+  "得分",
+  "冠军",
+  "运动员",
+  "球场",
+  "锦标赛",
+  "国籍",
+  "口渴",
+  "绳子",
+  "自由",
+  "善良",
+  "头痛",
+  "耳痛",
+  "牙痛",
+  "咳嗽",
+  "行为",
+  "影响",
+  "折断",
+  "发烧",
+  "流血",
+  "照顾",
+  "烧伤",
+  "产品",
+  "细菌",
+  "显微镜",
+  "肥皂",
+  "微小",
+  "富有",
+  "小偷",
+  "宝藏",
+  "贪心"
+    ];
+
+    const py = [
+  "jì jǐn",
+  "tóu kuī",
+  "chē bǎ",
+  "ān quán",
+  "lí kāi",
+  "dào dá",
+  "yì chù",
+  "shū shì",
+  "yóu kè",
+  "jiāo tōng",
+  "sī jī",
+  "huá xuě",
+  "míng bai",
+  "pián yi",
+  "áng guì",
+  "xiāng sì",
+  "shǎn shǎn fā guāng",
+  "pí juàn",
+  "hēi bào",
+  "mǎng shé",
+  "dān xīn",
+  "hǎn jiào",
+  "xié dài",
+  "shòu shāng",
+  "zhěng gè",
+  "shè qū",
+  "shǒu diàn tǒng",
+  "huā shēng",
+  "zài xún huán",
+  "zhǐ",
+  "jīn shǔ",
+  "bō li",
+  "sù liào",
+  "huán jìng",
+  "guàn zi",
+  "diū shī",
+  "zào yīn",
+  "shēng yīn",
+  "yǒu bāng zhù",
+  "dà xīng xing",
+  "wō niú",
+  "xióng māo",
+  "xī niú",
+  "zhuān jiā",
+  "wáng guó",
+  "huā pén",
+  "cōng míng",
+  "kǒng lóng",
+  "wēi xiǎn",
+  "diào chá",
+  "niǎo zuǐ",
+  "bǎi wàn",
+  "zá shí dòng wù",
+  "ròu shí dòng wù",
+  "bǔ liè",
+  "zhú zi",
+  "yào",
+  "cūn zhuāng",
+  "chéng nuò",
+  "jué dìng",
+  "huó yuè",
+  "róng yì",
+  "kùn nan",
+  "shòu huān yíng",
+  "tǎo yàn",
+  "dé fēn",
+  "guàn jūn",
+  "yùn dòng yuán",
+  "qiú chǎng",
+  "jǐn biāo sài",
+  "guó jí",
+  "kǒu kě",
+  "shéng zi",
+  "zì yóu",
+  "shàn liáng",
+  "tóu tòng",
+  "ěr tòng",
+  "yá tòng",
+  "ké sou",
+  "xíng wéi",
+  "yǐng xiǎng",
+  "zhé duàn",
+  "fā shāo",
+  "liú xuè",
+  "zhào gù",
+  "shāo shāng",
+  "chǎn pǐn",
+  "xì jūn",
+  "xiǎn wēi jìng",
+  "féi zào",
+  "wēi xiǎo",
+  "fù yǒu",
+  "xiǎo tōu",
+  "bǎo zàng",
+  "tān xīn"
+];
+
+    const en = [
+      "fasten",
+  "helmet",
+  "handlebar",
+  "safe",
+  "leave",
+  "arrive",
+  "benefit",
+  "comfortable",
+  "tourist",
+  "transport",
+  "driver",
+  "ski",
+  "understand",
+  "cheap",
+  "expensive",
+  "resemble",
+  "glitter",
+  "tired",
+  "panther",
+  "python",
+  "worried",
+  "shout",
+  "carry",
+  "hurt",
+  "whole",
+  "community",
+  "torch",
+  "peanut",
+  "recycling",
+  "paper",
+  "metal",
+  "glass",
+  "plastic",
+  "environment",
+  "jar",
+  "lost",
+  "noise",
+  "voice",
+  "helpful",
+  "gorilla",
+  "snail",
+  "panda",
+  "rhino",
+  "expert",
+  "kingdom",
+  "flowerpot",
+  "intelligent",
+  "dinosaur",
+  "dangerous",
+  "investigate",
+  "beak",
+  "million",
+  "omnivore",
+  "carnivore",
+  "hunt",
+  "bamboo",
+  "medicine",
+  "village",
+  "promise",
+  "decide",
+  "active",
+  "easy",
+  "hard",
+  "popular",
+  "hate",
+  "score",
+  "champion",
+  "athlete",
+  "court",
+  "championship",
+  "nationality",
+  "thirsty",
+  "rope",
+  "free",
+  "kindness",
+  "headache",
+  "earache",
+  "toothache",
+  "cough",
+  "behaviour",
+  "affect",
+  "break",
+  "fever",
+  "bleed",
+  "look after",
+  "burn",
+  "product",
+  "germ",
+  "microscope",
+  "soap",
+  "tiny",
+  "rich",
+  "thief",
+  "treasure",
+  "greedy"
+    ];
+
+    const bm = [
+"mengikat",
+  "topi keledar",
+  "pemegang basikal",
+  "selamat",
+  "bertolak",
+  "tiba",
+  "faedah",
+  "selesa",
+  "pelancong",
+  "pengangkutan",
+  "pemandu",
+  "meluncur ski",
+  "memahami",
+  "murah",
+  "mahal",
+  "menyerupai",
+  "berkilauan",
+  "letih",
+  "harimau kumbang",
+  "ular sawa",
+  "bimbang",
+  "menjerit",
+  "membawa",
+  "tercedera",
+  "seluruh",
+  "komuniti",
+  "lampu suluh",
+  "kacang tanah",
+  "kitar semula",
+  "kertas",
+  "logam",
+  "kaca",
+  "plastik",
+  "alam sekitar",
+  "balang",
+  "hilang",
+  "bunyi bising",
+  "suara",
+  "membantu",
+  "gorila",
+  "siput",
+  "panda",
+  "badak sumbu",
+  "pakar",
+  "kerajaan",
+  "pasu bunga",
+  "cerdas",
+  "dinosaur",
+  "berbahaya",
+  "menyiasat",
+  "paruh",
+  "juta",
+  "omnivor",
+  "karnivor",
+  "memburu",
+  "buluh",
+  "ubat",
+  "kampung",
+  "berjanji",
+  "membuat keputusan",
+  "aktif",
+  "senang",
+  "susah",
+  "popular",
+  "benci",
+  "markah",
+  "johan",
+  "atlet",
+  "gelanggang",
+  "kejohanan",
+  "kewarganegaraan",
+  "dahaga",
+  "tali",
+  "bebas",
+  "kebaikan",
+  "sakit kepala",
+  "sakit telinga",
+  "sakit gigi",
+  "batuk",
+  "tingkah laku",
+  "mempengaruhi",
+  "patah",
+  "demam",
+  "berdarah",
+  "menjaga",
+  "melecur",
+  "produk",
+  "kuman",
+  "mikroskop",
+  "sabun",
+  "kecil",
+  "kaya",
+  "pencuri",
+  "harta karun",
+  "tamak"
+];
+
+    const zhSentences = [
+      "请系紧你的安全带。",
+  "骑自行车时必须戴头盔。",
+  "他紧紧地握着车把。",
+  "现在过马路很安全。",
+  "我们八点离开。",
+  "火车很快就会到达。",
+  "运动有很多益处。",
+  "这张椅子很舒适。",
+  "每年有很多游客来马来西亚。",
+  "我们乘公共交通去学校。",
+  "司机停下了巴士。",
+  "我喜欢在冬天滑雪。",
+  "我不明白这个问题。",
+  "这个书包很便宜。",
+  "那块手表很昂贵。",
+  "她很像她的妈妈。",
+  "星星在天空闪闪发光。",
+  "走了很长的路后，我很疲倦。",
+  "黑豹是一种黑色的野猫。",
+  "蟒蛇是一种很长的蛇。",
+  "妈妈担心我的健康。",
+  "不要在图书馆里喊叫。",
+  "他帮我携带那个箱子。",
+  "我的脚受伤了。",
+  "我吃完了整个蛋糕。",
+  "我们必须帮助我们的社区。",
+  "他用手电筒在黑暗中看东西。",
+  "我喜欢吃花生酱。",
+  "再循环有助于保护环境。",
+  "我们应该节省纸张。",
+  "这个盒子是金属做的。",
+  "小心玻璃。",
+  "这个瓶子是塑料做的。",
+  "我们必须保护环境。",
+  "罐子里有一些果酱。",
+  "我丢失了我的钥匙。",
+  "噪音把我吵醒了。",
+  "她的声音很甜美。",
+  "这位老师很有帮助。",
+  "大猩猩是一种大动物。",
+  "蜗牛移动得很慢。",
+  "熊猫吃竹子。",
+  "犀牛的鼻子上有一只角。",
+  "他是数学专家。",
+  "狮子是动物王国的国王。",
+  "花盆里有一朵花。",
+  "她是一个非常聪明的学生。",
+  "恐龙生活在很久以前。",
+  "玩火很危险。",
+  "警方会调查这个案件。",
+  "鸟用它的嘴吃东西。",
+  "天空中有数百万颗星星。",
+  "熊是杂食动物。",
+  "狮子是肉食动物。",
+  "狮子捕猎食物。",
+  "熊猫吃竹子。",
+  "医生给了我一些药。",
+  "我的爷爷住在一个小村庄。",
+  "我承诺帮助你。",
+  "我无法决定买哪本书。",
+  "孩子们很活跃。",
+  "这道题很容易。",
+  "这道题很困难。",
+  "这首歌很受欢迎。",
+  "我讨厌吃苦菜。",
+  "他在比赛中得了一分。",
+  "她是赛跑的冠军。",
+  "他是一位著名的运动员。",
+  "球员们在球场上。",
+  "他赢得了羽毛球锦标赛。",
+  "我的国籍是马来西亚。",
+  "我口渴了，我需要一些水。",
+  "我们用绳子绑那个箱子。",
+  "这本书是免费的。",
+  "谢谢你的善良。",
+  "我头痛。",
+  "她耳痛。",
+  "他牙痛。",
+  "他咳得很厉害。",
+  "良好的行为很重要。",
+  "天气会影响我们的心情。",
+  "小心不要打破玻璃。",
+  "他发烧了。",
+  "他的鼻子在流血。",
+  "她照顾她的弟弟。",
+  "他的手被烧伤了。",
+  "这个产品是马来西亚制造的。",
+  "细菌会让我们生病。",
+  "我们用显微镜看微小的东西。",
+  "用肥皂洗手。",
+  "宝宝的手很微小。",
+  "他是一个富有的人。",
+  "小偷被警察捉住了。",
+  "海盗把宝藏藏了起来。",
+  "不要贪心。"
+    ];
+
+    const enSentences = [
+      "Please fasten your seatbelt.",
+  "You must wear a helmet when riding a bicycle.",
+  "He held the handlebar tightly.",
+  "It is safe to cross the road now.",
+  "We will leave at eight o'clock.",
+  "The train will arrive soon.",
+  "Exercise has many benefits.",
+  "This chair is very comfortable.",
+  "Many tourists visit Malaysia every year.",
+  "We use public transport to go to school.",
+  "The driver stopped the bus.",
+  "I like to ski in winter.",
+  "I do not understand this question.",
+  "This bag is very cheap.",
+  "That watch is very expensive.",
+  "She resembles her mother.",
+  "The stars glitter in the sky.",
+  "I am tired after the long walk.",
+  "The panther is a black wild cat.",
+  "The python is a very long snake.",
+  "Mother is worried about my health.",
+  "Do not shout in the library.",
+  "He helped me carry the box.",
+  "My leg hurts.",
+  "I ate the whole cake.",
+  "We must help our community.",
+  "He used a torch to see in the dark.",
+  "I like to eat peanut butter.",
+  "Recycling helps save the environment.",
+  "We should save paper.",
+  "This box is made of metal.",
+  "Be careful with the glass.",
+  "This bottle is made of plastic.",
+  "We must protect the environment.",
+  "There is some jam in the jar.",
+  "I lost my keys.",
+  "The noise woke me up.",
+  "Her voice is very sweet.",
+  "The teacher is very helpful.",
+  "The gorilla is a big animal.",
+  "The snail moves very slowly.",
+  "The panda eats bamboo.",
+  "The rhino has a horn on its nose.",
+  "He is an expert in Mathematics.",
+  "The lion is the king of the animal kingdom.",
+  "There is a flower in the flowerpot.",
+  "She is a very intelligent student.",
+  "The dinosaur lived long ago.",
+  "It is dangerous to play with fire.",
+  "The police will investigate the case.",
+  "The bird uses its beak to eat.",
+  "There are millions of stars in the sky.",
+  "A bear is an omnivore.",
+  "A lion is a carnivore.",
+  "The lion hunts for food.",
+  "The panda eats bamboo.",
+  "The doctor gave me some medicine.",
+  "My grandfather lives in a small village.",
+  "I promise to help you.",
+  "I cannot decide which book to buy.",
+  "The children are very active.",
+  "This question is easy.",
+  "This question is hard.",
+  "This song is very popular.",
+  "I hate eating bitter vegetables.",
+  "He scored a goal in the match.",
+  "She is the champion of the race.",
+  "He is a famous athlete.",
+  "The players are on the court.",
+  "He won the badminton championship.",
+  "My nationality is Malaysian.",
+  "I am thirsty. I need some water.",
+  "We used a rope to tie the box.",
+  "This book is free.",
+  "Thank you for your kindness.",
+  "I have a headache.",
+  "She has an earache.",
+  "He has a toothache.",
+  "He has a bad cough.",
+  "Good behaviour is important.",
+  "The weather can affect our mood.",
+  "Be careful not to break the glass.",
+  "He has a fever.",
+  "His nose is bleeding.",
+  "She looks after her little brother.",
+  "He got a burn on his hand.",
+  "This product is made in Malaysia.",
+  "Germs can make us sick.",
+  "We use a microscope to see tiny things.",
+  "Wash your hands with soap.",
+  "The baby's hands are very tiny.",
+  "He is a rich man.",
+  "The thief was caught by the police.",
+  "The pirates hid the treasure.",
+  "Do not be greedy."
+    ];
+
+    const msSentences = [
+      "Sila mengikat tali pinggang keledar anda.",
+  "Anda mesti memakai topi keledar semasa menunggang basikal.",
+  "Dia memegang pemegang basikal dengan kuat.",
+  "Selamat untuk melintas jalan sekarang.",
+  "Kami akan bertolak pada pukul lapan.",
+  "Kereta api akan tiba tidak lama lagi.",
+  "Bersenam mempunyai banyak faedah.",
+  "Kerusi ini sangat selesa.",
+  "Banyak pelancong melawat Malaysia setiap tahun.",
+  "Kami menggunakan pengangkutan awam untuk pergi ke sekolah.",
+  "Pemandu itu memberhentikan bas.",
+  "Saya suka meluncur ski pada musim sejuk.",
+  "Saya tidak memahami soalan ini.",
+  "Beg ini sangat murah.",
+  "Jam itu sangat mahal.",
+  "Dia menyerupai ibunya.",
+  "Bintang berkilauan di langit.",
+  "Saya letih selepas berjalan jauh.",
+  "Harimau kumbang ialah kucing liar yang berwarna hitam.",
+  "Ular sawa ialah sejenis ular yang sangat panjang.",
+  "Ibu bimbang tentang kesihatan saya.",
+  "Jangan menjerit di dalam perpustakaan.",
+  "Dia menolong saya membawa kotak itu.",
+  "Kaki saya tercedera.",
+  "Saya makan seluruh kek itu.",
+  "Kita harus menolong komuniti kita.",
+  "Dia menggunakan lampu suluh untuk melihat dalam gelap.",
+  "Saya suka makan mentega kacang tanah.",
+  "Kitar semula membantu menyelamatkan alam sekitar.",
+  "Kita harus menjimatkan kertas.",
+  "Kotak ini diperbuat daripada logam.",
+  "Berhati-hati dengan kaca itu.",
+  "Botol ini diperbuat daripada plastik.",
+  "Kita harus melindungi alam sekitar.",
+  "Terdapat sedikit jem di dalam balang.",
+  "Saya hilang kunci saya.",
+  "Bunyi bising itu mengejutkan saya.",
+  "Suaranya sangat merdu.",
+  "Cikgu ini sangat membantu.",
+  "Gorila ialah haiwan yang besar.",
+  "Siput bergerak dengan sangat perlahan.",
+  "Panda makan buluh.",
+  "Badak sumbu mempunyai tanduk di hidungnya.",
+  "Dia ialah pakar dalam Matematik.",
+  "Singa ialah raja dalam kerajaan haiwan.",
+  "Terdapat sekuntum bunga di dalam pasu bunga.",
+  "Dia seorang pelajar yang sangat cerdas.",
+  "Dinosaur hidup pada zaman dahulu.",
+  "Berbahaya untuk bermain dengan api.",
+  "Polis akan menyiasat kes ini.",
+  "Burung menggunakan paruhnya untuk makan.",
+  "Terdapat berjuta-juta bintang di langit.",
+  "Beruang ialah omnivor.",
+  "Singa ialah karnivor.",
+  "Singa memburu makanan.",
+  "Panda makan buluh.",
+  "Doktor memberi saya beberapa ubat.",
+  "Atuk saya tinggal di sebuah kampung kecil.",
+  "Saya berjanji akan menolong anda.",
+  "Saya tidak dapat membuat keputusan untuk membeli buku yang mana.",
+  "Kanak-kanak itu sangat aktif.",
+  "Soalan ini senang.",
+  "Soalan ini susah.",
+  "Lagu ini sangat popular.",
+  "Saya benci makan sayur yang pahit.",
+  "Dia mendapat satu markah dalam perlawanan itu.",
+  "Dia ialah johan dalam perlumbaan itu.",
+  "Dia ialah atlet yang terkenal.",
+  "Pemain berada di atas gelanggang.",
+  "Dia memenangi kejohanan badminton.",
+  "Kewarganegaraan saya ialah Malaysia.",
+  "Saya dahaga. Saya perlukan air.",
+  "Kami menggunakan tali untuk mengikat kotak itu.",
+  "Buku ini percuma.",
+  "Terima kasih atas kebaikan anda.",
+  "Saya sakit kepala.",
+  "Dia sakit telinga.",
+  "Dia sakit gigi.",
+  "Dia batuk yang teruk.",
+  "Tingkah laku yang baik sangat penting.",
+  "Cuaca boleh mempengaruhi mood kita.",
+  "Berhati-hati jangan patahkan kaca itu.",
+  "Dia demam.",
+  "Hidungnya berdarah.",
+  "Dia menjaga adiknya.",
+  "Tangannya melecur.",
+  "Produk ini dibuat di Malaysia.",
+  "Kuman boleh membuat kita sakit.",
+  "Kami menggunakan mikroskop untuk melihat benda kecil.",
+  "Basuh tangan anda dengan sabun.",
+  "Tangan bayi itu sangat kecil.",
+  "Dia seorang yang kaya.",
+  "Pencuri itu ditangkap oleh polis.",
+  "Lanun menyembunyikan harta karun itu.",
+  "Jangan tamak."
+    ];
+
+    // ===== DOM & 语音 =====
+    let currentIndex = 0;
+    const questionDiv = document.getElementById('question');
+    const wordDiv = document.getElementById('word');
+    const meaningDiv = document.getElementById('meaning');
+
+    function setMeaning(text) { meaningDiv.textContent = text || ''; }
+
+    // 统一的朗读函数（默认：慢速 0.4、音高 0.6）
+    function speak(text, lang, preferNames = [], rate = 0.4, pitch = 0.6) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = rate;
+      u.pitch = pitch;
+
+      const trySpeak = () => {
+        const voices = speechSynthesis.getVoices() || [];
+        let candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith(lang.toLowerCase()));
+        // 如果没有马来语，回退印尼语
+        if (!candidates.length && lang.toLowerCase().startsWith('ms')) {
+          candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith('id'));
+          if (candidates.length) u.lang = 'id-ID';
+        }
+        for (const key of preferNames) {
+          const found = candidates.find(v => (v.name || '').toLowerCase().includes(key.toLowerCase()));
+          if (found) { u.voice = found; break; }
+        }
+        if (!u.voice && candidates.length) u.voice = candidates[0];
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      };
+
+      if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = trySpeak;
+      }
+      trySpeak();
+    }
+
+    // ===== 华文为主（按钮函数不再覆盖速率/音高）=====
+    function playChineseWord() {
+  const text = zh[currentIndex] || '';
+  const pinyin = py[currentIndex] || '';
+
+  setMeaning(pinyin);
+
+  speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+}
+
+    function showEnglish() {
+      const text = en[currentIndex] || '(待添加英文)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function playMalayWord(){
+
+const text = bm[currentIndex] || '';
+
+setMeaning(text);
+
+speak(
+text,
+'ms-MY',
+['Microsoft','Malay','Bahasa']
+);
+
+}
+
+    function showChineseSentence() {
+      const text = zhSentences[currentIndex] || '(待添加华文造句)';
+      setMeaning(text);
+      speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+    }
+
+    function showEnglishSentence() {
+      const text = enSentences[currentIndex] || '(待添加英文句子)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function showMalaySentence() {
+      const text = msSentences[currentIndex] || '(待添加马来文句子)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Rizwan','Microsoft','Malay','Bahasa']);
+    }
+
+    function nextWord() {
+
+if(currentIndex < bm.length - 1){
+
+currentIndex++;
+
+updateQuestion();
+
+}
+
+}
+
+    function prevWord(){
+
+if(currentIndex > 0){
+
+currentIndex--;
+
+updateQuestion();
+
+}
+
+}
+
+    function updateQuestion() {
+  questionDiv.innerText = `题目 ${currentIndex + 1}`;
+  wordDiv.innerText = en[currentIndex] || '—';
+  setMeaning('');
+}
+
+
+// ===== 搜索功能 =====
+function searchWord() {
+
+  const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+
+  if (!keyword) {
+    alert("请输入要搜索的词语");
+    return;
+  }
+
+
+  const index = en.findIndex(word => 
+word.toLowerCase() === keyword
+);
+
+
+  if (index !== -1) {
+
+    currentIndex = index;
+    updateQuestion();
+
+  } else {
+
+    alert("没有找到：" + keyword);
+
+  }
+
+}
+
+function showChinese(){
+
+const text = zh[currentIndex] || '';
+
+setMeaning(text);
+
+speak(
+text,
+'zh-CN',
+['Xiaoyi','Microsoft']
+);
+
+}
+
+function playEnglishWord(){
+
+const text = en[currentIndex] || '';
+
+setMeaning('');
+
+speak(
+text,
+'en-US',
+['Google','Microsoft','Natural']
+);
+
+}
+
+updateQuestion();
+  </script>
+</body>
+</html>

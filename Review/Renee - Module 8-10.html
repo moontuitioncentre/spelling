@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>听写练习（English）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background-color: #f0f0f0;
+    }
+    .container {
+      text-align: center; padding: 20px; background: #fff; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,.1); max-width: 720px; width: 92%;
+    }
+    .question { font-size: 28px; margin-bottom: 10px; }
+    .word { font-size: 34px; margin-bottom: 16px; }
+    .btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  margin-bottom: 14px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  font-size: 18px;
+  padding: 8px 12px;
+  width: 180px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.btn.search-btn {
+  background-color: #008cff;
+}
+
+    .btn {
+      font-size: 18px; padding: 10px 20px; border: none; border-radius: 8px;
+      background-color: #dc3545; color: #fff; cursor: pointer;
+    }
+    .btn.secondary { background-color: #6c757d; }
+    .btn.info { background-color: #dc3545; }
+    .btn.success { background-color: #dc3545; }
+    .btn.warning { background-color: #ffc107; color: #000; }
+    .meaning {
+      margin-top: 10px; font-size: 20px; background: #f8f9fa; border-radius: 8px;
+      padding: 12px; min-height: 60px; line-height: 1.6; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="search-box">
+  <input 
+  type="text" 
+  id="searchInput" 
+  placeholder=""
+  onkeydown="if(event.key === 'Enter') searchWord();"
+>
+
+  <button 
+    class="btn search-btn" 
+    onclick="searchWord()">
+    Search
+  </button>
+</div>
+    <div class="question" id="question">题目 1</div>
+    <div class="word" id="word">—</div>
+    
+    <div class="btns">
+      <!-- 华文优先 -->
+       <div class="btn-row">
+      <button class="btn" onclick="playEnglishWord()">🔊</button>
+      <button class="btn success" onclick="playMalayWord()">Bahasa Melayu</button>
+      <button class="btn info" onclick="showChinese()">华文</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn warning" onclick="showEnglishSentence()">Sentence</button>
+      <button class="btn warning" onclick="showMalaySentence()">Bina Ayat</button>      
+      <button class="btn warning" onclick="showChineseSentence()">造句</button>
+      
+      </div>
+
+      <div class="btn-row">
+      <button class="btn secondary" onclick="prevWord()">上一题</button>
+      <button class="btn secondary" onclick="nextWord()">下一题</button>
+      </div>
+
+</div>
+
+    <div class="meaning" id="meaning"></div>
+
+  </div>
+
+  <script>
+    // ====== 词库 ======
+    const zh = [
+      "在家",
+  "购物中心",
+  "剧院",
+  "下午",
+  "晚上",
+  "可怕",
+  "有趣",
+  "无聊",
+  "美味",
+  "爆米花",
+  "吵闹",
+  "马车",
+  "游乐园",
+  "有趣",
+  "马戏团",
+  "岛屿",
+  "海",
+  "太阳",
+  "船",
+  "打包",
+  "假期",
+  "森林",
+  "摘花",
+  "河流",
+  "生火",
+  "捕鱼",
+  "打开",
+  "关闭",
+  "寻找",
+  "买明信片",
+  "看星星",
+  "怪物",
+  "洞穴",
+  "猎豹",
+  "老鼠",
+  "强壮",
+  "快速",
+  "生气",
+  "鲸鱼",
+  "海豚",
+  "鲨鱼",
+  "科学",
+  "行星",
+  "周围",
+  "近",
+  "远",
+  "年轻",
+  "老"
+    ];
+
+    const py = [
+  "zài jiā",
+  "gòu wù zhōng xīn",
+  "jù yuàn",
+  "xià wǔ",
+  "wǎn shang",
+  "kě pà",
+  "yǒu qù",
+  "wú liáo",
+  "měi wèi",
+  "bào mǐ huā",
+  "chǎo nào",
+  "mǎ chē",
+  "yóu lè yuán",
+  "yǒu qù",
+  "mǎ xì tuán",
+  "dǎo yǔ",
+  "hǎi",
+  "tài yáng",
+  "chuán",
+  "dǎ bāo",
+  "jià qī",
+  "sēn lín",
+  "zhāi huā",
+  "hé liú",
+  "shēng huǒ",
+  "bǔ yú",
+  "dǎ kāi",
+  "guān bì",
+  "xún zhǎo",
+  "mǎi míng xìn piàn",
+  "kàn xīng xing",
+  "guài wù",
+  "dòng xué",
+  "liè bào",
+  "lǎo shǔ",
+  "qiáng zhuàng",
+  "kuài sù",
+  "shēng qì",
+  "jīng yú",
+  "hǎi tún",
+  "shā yú",
+  "kē xué",
+  "xíng xīng",
+  "zhōu wéi",
+  "jìn",
+  "yuǎn",
+  "nián qīng",
+  "lǎo"
+];
+
+    const en = [
+      "at home",
+  "shopping centre",
+  "theatre",
+  "in the afternoon",
+  "in the evening",
+  "scary",
+  "funny",
+  "boring",
+  "delicious",
+  "popcorn",
+  "noisy",
+  "carriage",
+  "amusement park",
+  "interesting",
+  "circus",
+  "island",
+  "sea",
+  "sun",
+  "boat",
+  "pack",
+  "holiday",
+  "forest",
+  "pick flowers",
+  "river",
+  "make a fire",
+  "catch a fish",
+  "open",
+  "closed",
+  "find",
+  "buy postcards",
+  "look at the stars",
+  "monster",
+  "cave",
+  "cheetah",
+  "rat",
+  "strong",
+  "fast",
+  "angry",
+  "whale",
+  "dolphin",
+  "shark",
+  "Science",
+  "planet",
+  "around",
+  "close",
+  "far",
+  "young",
+  "old"
+    ];
+
+    const bm = [
+"di rumah",
+  "pusat membeli-belah",
+  "teater",
+  "pada waktu petang",
+  "pada waktu malam",
+  "menakutkan",
+  "lucu",
+  "membosankan",
+  "sedap",
+  "bertih jagung",
+  "bising",
+  "kereta kuda",
+  "taman hiburan",
+  "menarik",
+  "sarkas",
+  "pulau",
+  "laut",
+  "matahari",
+  "bot",
+  "membungkus",
+  "percutian",
+  "hutan",
+  "memetik bunga",
+  "sungai",
+  "membuat api",
+  "menangkap ikan",
+  "buka",
+  "tutup",
+  "mencari",
+  "membeli poskad",
+  "melihat bintang",
+  "raksasa",
+  "gua",
+  "cheetah",
+  "tikus",
+  "kuat",
+  "cepat",
+  "marah",
+  "paus",
+  "dolphin",
+  "jerung",
+  "Sains",
+  "planet",
+  "sekitar",
+  "dekat",
+  "jauh",
+  "muda",
+  "tua"
+];
+
+    const zhSentences = [
+      "星期天我待在家。",
+  "我们去购物中心买衣服。",
+  "我们在剧院看了一场戏。",
+  "我在下午做功课。",
+  "我在晚上看电视。",
+  "那部电影很可怕。",
+  "这个故事很有趣。",
+  "这堂课很无聊。",
+  "这食物很美味。",
+  "我喜欢在电影院吃爆米花。",
+  "课室里很吵闹。",
+  "我们在公园里坐马车。",
+  "我们在游乐园玩得很开心。",
+  "这本书很有趣。",
+  "我们在马戏团看了小丑表演。",
+  "岛上有很多树。",
+  "海很蓝，很美丽。",
+  "今天的太阳很亮。",
+  "我们坐船去岛上。",
+  "我去学校前先打包书包。",
+  "假期时我们去了海边。",
+  "森林里有很多动物。",
+  "她喜欢在花园里摘花。",
+  "这条河流很干净。",
+  "我们生火煮食物。",
+  "爸爸喜欢在河边捕鱼。",
+  "请把门打开。",
+  "这家店今天关闭。",
+  "我找不到我的铅笔。",
+  "我要买明信片送给朋友。",
+  "晚上，我们在天空看星星。",
+  "故事里的怪物很可怕。",
+  "熊睡在洞穴里。",
+  "猎豹跑得非常快。",
+  "我在厨房看到一只老鼠。",
+  "他很强壮，能搬起那个箱子。",
+  "这辆车很快。",
+  "妈妈生我的气。",
+  "鲸鱼是海里最大的动物。",
+  "海豚很聪明。",
+  "鲨鱼有锋利的牙齿。",
+  "我喜欢在学校学科学。",
+  "地球是一颗行星。",
+  "房子周围有很多花。",
+  "这家店离我家很近。",
+  "学校离我家很远。",
+  "我的弟弟还年轻。",
+  "我的爷爷很老了。"
+    ];
+
+    const enSentences = [
+      "I stay at home on Sunday.",
+  "We go to the shopping centre to buy clothes.",
+  "We watched a play at the theatre.",
+  "I do my homework in the afternoon.",
+  "I watch television in the evening.",
+  "The movie was very scary.",
+  "This story is very funny.",
+  "The lesson was boring.",
+  "The food is delicious.",
+  "I like to eat popcorn at the cinema.",
+  "The classroom is very noisy.",
+  "We rode in a carriage at the park.",
+  "We had fun at the amusement park.",
+  "This book is very interesting.",
+  "We saw clowns at the circus.",
+  "There are many trees on the island.",
+  "The sea is blue and beautiful.",
+  "The sun is very bright today.",
+  "We went to the island by boat.",
+  "I pack my bag before going to school.",
+  "We went to the beach during the holiday.",
+  "There are many animals in the forest.",
+  "She likes to pick flowers in the garden.",
+  "The river is very clean.",
+  "We make a fire to cook food.",
+  "My father likes to catch a fish at the river.",
+  "Please open the door.",
+  "The shop is closed today.",
+  "I cannot find my pencil.",
+  "I want to buy postcards for my friends.",
+  "At night, we look at the stars in the sky.",
+  "The monster in the story is scary.",
+  "The bear sleeps in a cave.",
+  "The cheetah runs very fast.",
+  "I saw a rat in the kitchen.",
+  "He is very strong and can carry the box.",
+  "The car is very fast.",
+  "My mother is angry with me.",
+  "The whale is the biggest animal in the sea.",
+  "The dolphin is very clever.",
+  "The shark has sharp teeth.",
+  "I like to learn Science at school.",
+  "The Earth is a planet.",
+  "There are many flowers around the house.",
+  "The shop is close to my house.",
+  "The school is far from my house.",
+  "My brother is still young.",
+  "My grandfather is very old."
+    ];
+
+    const msSentences = [
+      "Saya tinggal di rumah pada hari Ahad.",
+  "Kami pergi ke pusat membeli-belah untuk membeli pakaian.",
+  "Kami menonton persembahan di teater.",
+  "Saya membuat kerja rumah pada waktu petang.",
+  "Saya menonton televisyen pada waktu malam.",
+  "Filem itu sangat menakutkan.",
+  "Cerita ini sangat lucu.",
+  "Pelajaran itu membosankan.",
+  "Makanan ini sangat sedap.",
+  "Saya suka makan bertih jagung di panggung wayang.",
+  "Bilik darjah sangat bising.",
+  "Kami menaiki kereta kuda di taman.",
+  "Kami berseronok di taman hiburan.",
+  "Buku ini sangat menarik.",
+  "Kami melihat badut di sarkas.",
+  "Terdapat banyak pokok di pulau itu.",
+  "Laut sangat biru dan cantik.",
+  "Matahari sangat terang hari ini.",
+  "Kami pergi ke pulau dengan bot.",
+  "Saya membungkus beg sebelum pergi ke sekolah.",
+  "Kami pergi ke pantai semasa percutian.",
+  "Terdapat banyak haiwan di dalam hutan.",
+  "Dia suka memetik bunga di taman.",
+  "Sungai ini sangat bersih.",
+  "Kami membuat api untuk memasak makanan.",
+  "Ayah saya suka menangkap ikan di sungai.",
+  "Sila buka pintu.",
+  "Kedai ini tutup hari ini.",
+  "Saya tidak dapat mencari pensel saya.",
+  "Saya mahu membeli poskad untuk kawan-kawan saya.",
+  "Pada waktu malam, kami melihat bintang di langit.",
+  "Raksasa dalam cerita itu menakutkan.",
+  "Beruang itu tidur di dalam gua.",
+  "Cheetah berlari sangat cepat.",
+  "Saya melihat seekor tikus di dapur.",
+  "Dia sangat kuat dan boleh mengangkat kotak itu.",
+  "Kereta ini sangat cepat.",
+  "Ibu marah kepada saya.",
+  "Paus ialah haiwan terbesar di laut.",
+  "Dolphin sangat bijak.",
+  "Jerung mempunyai gigi yang tajam.",
+  "Saya suka belajar Sains di sekolah.",
+  "Bumi ialah sebuah planet.",
+  "Terdapat banyak bunga di sekitar rumah.",
+  "Kedai ini dekat dengan rumah saya.",
+  "Sekolah ini jauh dari rumah saya.",
+  "Adik saya masih muda.",
+  "Atuk saya sangat tua."
+    ];
+
+    // ===== DOM & 语音 =====
+    let currentIndex = 0;
+    const questionDiv = document.getElementById('question');
+    const wordDiv = document.getElementById('word');
+    const meaningDiv = document.getElementById('meaning');
+
+    function setMeaning(text) { meaningDiv.textContent = text || ''; }
+
+    // 统一的朗读函数（默认：慢速 0.4、音高 0.6）
+    function speak(text, lang, preferNames = [], rate = 0.4, pitch = 0.6) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = rate;
+      u.pitch = pitch;
+
+      const trySpeak = () => {
+        const voices = speechSynthesis.getVoices() || [];
+        let candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith(lang.toLowerCase()));
+        // 如果没有马来语，回退印尼语
+        if (!candidates.length && lang.toLowerCase().startsWith('ms')) {
+          candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith('id'));
+          if (candidates.length) u.lang = 'id-ID';
+        }
+        for (const key of preferNames) {
+          const found = candidates.find(v => (v.name || '').toLowerCase().includes(key.toLowerCase()));
+          if (found) { u.voice = found; break; }
+        }
+        if (!u.voice && candidates.length) u.voice = candidates[0];
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      };
+
+      if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = trySpeak;
+      }
+      trySpeak();
+    }
+
+    // ===== 华文为主（按钮函数不再覆盖速率/音高）=====
+    function playChineseWord() {
+  const text = zh[currentIndex] || '';
+  const pinyin = py[currentIndex] || '';
+
+  setMeaning(pinyin);
+
+  speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+}
+
+    function showEnglish() {
+      const text = en[currentIndex] || '(待添加英文)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function playMalayWord(){
+
+const text = bm[currentIndex] || '';
+
+setMeaning(text);
+
+speak(
+text,
+'ms-MY',
+['Microsoft','Malay','Bahasa']
+);
+
+}
+
+    function showChineseSentence() {
+      const text = zhSentences[currentIndex] || '(待添加华文造句)';
+      setMeaning(text);
+      speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+    }
+
+    function showEnglishSentence() {
+      const text = enSentences[currentIndex] || '(待添加英文句子)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function showMalaySentence() {
+      const text = msSentences[currentIndex] || '(待添加马来文句子)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Rizwan','Microsoft','Malay','Bahasa']);
+    }
+
+    function nextWord() {
+
+if(currentIndex < bm.length - 1){
+
+currentIndex++;
+
+updateQuestion();
+
+}
+
+}
+
+    function prevWord(){
+
+if(currentIndex > 0){
+
+currentIndex--;
+
+updateQuestion();
+
+}
+
+}
+
+    function updateQuestion() {
+  questionDiv.innerText = `题目 ${currentIndex + 1}`;
+  wordDiv.innerText = en[currentIndex] || '—';
+  setMeaning('');
+}
+
+
+// ===== 搜索功能 =====
+function searchWord() {
+
+  const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+
+  if (!keyword) {
+    alert("请输入要搜索的词语");
+    return;
+  }
+
+
+  const index = en.findIndex(word => 
+word.toLowerCase() === keyword
+);
+
+
+  if (index !== -1) {
+
+    currentIndex = index;
+    updateQuestion();
+
+  } else {
+
+    alert("没有找到：" + keyword);
+
+  }
+
+}
+
+function showChinese(){
+
+const text = zh[currentIndex] || '';
+
+setMeaning(text);
+
+speak(
+text,
+'zh-CN',
+['Xiaoyi','Microsoft']
+);
+
+}
+
+function playEnglishWord(){
+
+const text = en[currentIndex] || '';
+
+setMeaning('');
+
+speak(
+text,
+'en-US',
+['Google','Microsoft','Natural']
+);
+
+}
+
+updateQuestion();
+  </script>
+</body>
+</html>

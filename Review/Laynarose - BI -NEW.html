@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>听写练习（English）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100vh; background-color: #f0f0f0;
+    }
+    .container {
+      text-align: center; padding: 20px; background: #fff; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,.1); max-width: 720px; width: 92%;
+    }
+    .question { font-size: 28px; margin-bottom: 10px; }
+    .word { font-size: 34px; margin-bottom: 16px; }
+    .btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  margin-bottom: 14px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  font-size: 18px;
+  padding: 8px 12px;
+  width: 180px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.btn.search-btn {
+  background-color: #008cff;
+}
+
+    .btn {
+      font-size: 18px; padding: 10px 20px; border: none; border-radius: 8px;
+      background-color: #dc3545; color: #fff; cursor: pointer;
+    }
+    .btn.secondary { background-color: #6c757d; }
+    .btn.info { background-color: #dc3545; }
+    .btn.success { background-color: #dc3545; }
+    .btn.warning { background-color: #ffc107; color: #000; }
+    .meaning {
+      margin-top: 10px; font-size: 20px; background: #f8f9fa; border-radius: 8px;
+      padding: 12px; min-height: 60px; line-height: 1.6; white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="search-box">
+  <input 
+  type="text" 
+  id="searchInput" 
+  placeholder=""
+  onkeydown="if(event.key === 'Enter') searchWord();"
+>
+
+  <button 
+    class="btn search-btn" 
+    onclick="searchWord()">
+    Search
+  </button>
+</div>
+    <div class="question" id="question">题目 1</div>
+    <div class="word" id="word">—</div>
+    
+    <div class="btns">
+      <!-- 华文优先 -->
+       <div class="btn-row">
+      <button class="btn" onclick="playEnglishWord()">🔊</button>
+      <button class="btn success" onclick="playMalayWord()">Bahasa Melayu</button>
+      <button class="btn info" onclick="showChinese()">华文</button>
+      </div>
+
+      <div class="btn-row">
+      <button class="btn warning" onclick="showEnglishSentence()">Sentence</button>
+      <button class="btn warning" onclick="showMalaySentence()">Bina Ayat</button>      
+      <button class="btn warning" onclick="showChineseSentence()">造句</button>
+      
+      </div>
+
+      <div class="btn-row">
+      <button class="btn secondary" onclick="prevWord()">上一题</button>
+      <button class="btn secondary" onclick="nextWord()">下一题</button>
+      </div>
+
+</div>
+
+    <div class="meaning" id="meaning"></div>
+
+  </div>
+
+  <script>
+    // ====== 词库 ======
+    const zh = [
+      "星期一",
+  "星期二",
+  "星期三",
+  "星期四",
+  "星期五",
+  "星期六",
+  "星期日",
+  "空闲时间",
+  "星期",
+  "学校",
+  "足球",
+  "比赛",
+  "旅行",
+  "湖",
+  "游泳",
+  "忙碌",
+  "捉迷藏",
+  "看电视",
+  "周末",
+  "丢失",
+  "完美",
+  "骑",
+  "自行车",
+  "睡觉",
+  "健康",
+  "保持健康",
+  "运动",
+  "学习",
+  "不健康",
+  "调查",
+  "小时",
+  "钢琴",
+  "浴室",
+  "卧室",
+  "客厅",
+  "大厅",
+  "餐厅",
+  "厨房",
+  "楼梯",
+  "地下室",
+  "怪物",
+  "可爱",
+  "蜘蛛",
+  "花园",
+  "小心",
+  "问题",
+  "栖息地",
+  "极地",
+  "海洋",
+  "丛林",
+  "沙漠",
+  "山脉",
+  "沙子",
+  "岩石",
+  "珊瑚",
+  "雪",
+  "鹦鹉",
+  "骆驼",
+  "北极熊",
+  "鲨鱼",
+  "水母",
+  "企鹅"
+    ];
+
+    const py = [
+  "xīng qī yī",
+  "xīng qī èr",
+  "xīng qī sān",
+  "xīng qī sì",
+  "xīng qī wǔ",
+  "xīng qī liù",
+  "xīng qī rì",
+  "kòng xián shí jiān",
+  "xīng qī",
+  "xué xiào",
+  "zú qiú",
+  "bǐ sài",
+  "lǚ xíng",
+  "hú",
+  "yóu yǒng",
+  "máng lù",
+  "zhuō mí cáng",
+  "kàn diàn shì",
+  "zhōu mò",
+  "diū shī",
+  "wán měi",
+  "qí",
+  "zì xíng chē",
+  "shuì jiào",
+  "jiàn kāng",
+  "bǎo chí jiàn kāng",
+  "yùn dòng",
+  "xué xí",
+  "bù jiàn kāng",
+  "diào chá",
+  "xiǎo shí",
+  "gāng qín",
+  "yù shì",
+  "wò shì",
+  "kè tīng",
+  "dà tīng",
+  "cān tīng",
+  "chú fáng",
+  "lóu tī",
+  "dì xià shì",
+  "guài wù",
+  "kě ài",
+  "zhī zhū",
+  "huā yuán",
+  "xiǎo xīn",
+  "wèn tí",
+  "qī xī dì",
+  "jí dì",
+  "hǎi yáng",
+  "cóng lín",
+  "shā mò",
+  "shān mài",
+  "shā zi",
+  "yán shí",
+  "shān hú",
+  "xuě",
+  "yīng wǔ",
+  "luò tuo",
+  "běi jí xióng",
+  "shā yú",
+  "shuǐ mǔ",
+  "qǐ é"
+];
+
+    const en = [
+      "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+  "free time",
+  "week",
+  "school",
+  "football",
+  "match",
+  "trip",
+  "lake",
+  "swimming",
+  "busy",
+  "hide-and-seek",
+  "watch TV",
+  "weekend",
+  "lost",
+  "perfect",
+  "ride",
+  "bike",
+  "sleep",
+  "healthy",
+  "keep fit",
+  "sport",
+  "learn",
+  "unhealthy",
+  "survey",
+  "hours",
+  "piano",
+  "bathroom",
+  "bedroom",
+  "living room",
+  "hall",
+  "dining room",
+  "kitchen",
+  "stairs",
+  "cellar",
+  "monster",
+  "lovely",
+  "spider",
+  "garden",
+  "careful",
+  "problem",
+  "habitats",
+  "polar region",
+  "ocean",
+  "jungle",
+  "desert",
+  "mountains",
+  "sand",
+  "rocks",
+  "coral",
+  "snow",
+  "parrot",
+  "camel",
+  "polar bear",
+  "shark",
+  "jellyfish",
+  "penguin"
+    ];
+
+    const bm = [
+"Isnin",
+  "Selasa",
+  "Rabu",
+  "Khamis",
+  "Jumaat",
+  "Sabtu",
+  "Ahad",
+  "masa lapang",
+  "minggu",
+  "sekolah",
+  "bola sepak",
+  "perlawanan",
+  "perjalanan",
+  "tasik",
+  "berenang",
+  "sibuk",
+  "main sorok-sorok",
+  "menonton TV",
+  "hujung minggu",
+  "hilang",
+  "sempurna",
+  "menunggang",
+  "basikal",
+  "tidur",
+  "sihat",
+  "menjaga kecergasan",
+  "sukan",
+  "belajar",
+  "tidak sihat",
+  "tinjauan",
+  "jam",
+  "piano",
+  "bilik mandi",
+  "bilik tidur",
+  "ruang tamu",
+  "dewan",
+  "ruang makan",
+  "dapur",
+  "tangga",
+  "bilik bawah tanah",
+  "raksasa",
+  "comel",
+  "labah-labah",
+  "taman",
+  "berhati-hati",
+  "masalah",
+  "habitat",
+  "kawasan kutub",
+  "lautan",
+  "hutan belantara",
+  "padang pasir",
+  "gunung-ganang",
+  "pasir",
+  "batu",
+  "karang",
+  "salji",
+  "burung kakaktua",
+  "unta",
+  "beruang kutub",
+  "jerung",
+  "ubur-ubur",
+  "penguin"
+];
+
+    const zhSentences = [
+      "我星期一去学校。",
+  "我们星期二有英文课。",
+  "星期三是一星期的第三天。",
+  "我星期四踢足球。",
+  "星期五是我最喜欢的一天。",
+  "我星期六去看奶奶。",
+  "我星期日在家休息。",
+  "我在空闲时间看书。",
+  "一星期有七天。",
+  "我的学校又大又干净。",
+  "我喜欢和朋友踢足球。",
+  "我们赢了那场足球比赛。",
+  "我们去动物园旅行。",
+  "那个湖很美丽。",
+  "我每个星期日去游泳。",
+  "妈妈今天很忙碌。",
+  "孩子们在玩捉迷藏。",
+  "我在晚上看电视。",
+  "我周末去公园。",
+  "我丢失了我的铅笔。",
+  "你的画很完美。",
+  "我骑自行车去公园。",
+  "我的自行车是蓝色的。",
+  "我九点睡觉。",
+  "吃蔬菜让我们保持健康。",
+  "我每天运动以保持健康。",
+  "足球是我最喜欢的运动。",
+  "我想学游泳。",
+  "吃太多糖是不健康的。",
+  "我们在班上做了一项调查。",
+  "我昨晚睡了八个小时。",
+  "她弹钢琴弹得很好。",
+  "我在浴室刷牙。",
+  "我的卧室很小但很干净。",
+  "我们在客厅看电视。",
+  "客人在大厅等候。",
+  "我们在餐厅吃晚餐。",
+  "妈妈正在厨房煮饭。",
+  "下楼梯时要小心。",
+  "地下室在屋子下面。",
+  "故事里的怪物很可怕。",
+  "你的裙子很可爱。",
+  "我看到墙上有一只蜘蛛。",
+  "花园里有很多花。",
+  "过马路时要小心。",
+  "我能解决这个问题。",
+  "不同的动物住在不同的栖息地。",
+  "北极熊住在极地。",
+  "海洋很深。",
+  "很多动物住在丛林里。",
+  "沙漠又热又干。",
+  "我们上个星期爬了山脉。",
+  "海滩上的沙子很软。",
+  "山丘上有很多岩石。",
+  "海里的珊瑚很色彩缤纷。",
+  "雪是白色和冷的。",
+  "鹦鹉会说话。",
+  "骆驼住在沙漠里。",
+  "北极熊住在北极。",
+  "鲨鱼有锋利的牙齿。",
+  "水母住在海里。",
+  "企鹅住在寒冷的地方。"
+    ];
+
+    const enSentences = [
+      "I go to school on Monday.",
+  "We have English class on Tuesday.",
+  "Wednesday is the third day of the week.",
+  "I play football on Thursday.",
+  "Friday is my favourite day.",
+  "I visit my grandmother on Saturday.",
+  "I rest at home on Sunday.",
+  "I read books in my free time.",
+  "There are seven days in a week.",
+  "My school is big and clean.",
+  "I like to play football with my friends.",
+  "We won the football match.",
+  "We went on a trip to the zoo.",
+  "The lake is very beautiful.",
+  "I go swimming every Sunday.",
+  "My mother is very busy today.",
+  "The children are playing hide-and-seek.",
+  "I watch TV in the evening.",
+  "I go to the park on the weekend.",
+  "I lost my pencil.",
+  "Your drawing is perfect.",
+  "I ride my bike to the park.",
+  "My bike is blue.",
+  "I sleep at nine o'clock.",
+  "Eating vegetables keeps us healthy.",
+  "I exercise every day to keep fit.",
+  "Football is my favourite sport.",
+  "I want to learn how to swim.",
+  "Eating too much sugar is unhealthy.",
+  "We did a survey in our class.",
+  "I slept for eight hours last night.",
+  "She plays the piano very well.",
+  "I brush my teeth in the bathroom.",
+  "My bedroom is small but clean.",
+  "We watch TV in the living room.",
+  "The guests are waiting in the hall.",
+  "We eat dinner in the dining room.",
+  "Mother is cooking in the kitchen.",
+  "Be careful when you walk down the stairs.",
+  "The cellar is under the house.",
+  "The monster in the story is scary.",
+  "Your dress is very lovely.",
+  "I saw a spider on the wall.",
+  "There are many flowers in the garden.",
+  "Be careful when crossing the road.",
+  "I can solve this problem.",
+  "Different animals live in different habitats.",
+  "Polar bears live in the polar region.",
+  "The ocean is very deep.",
+  "Many animals live in the jungle.",
+  "The desert is very hot and dry.",
+  "We climbed the mountains last week.",
+  "The sand at the beach is soft.",
+  "There are many rocks on the hill.",
+  "The coral in the sea is very colourful.",
+  "The snow is white and cold.",
+  "The parrot can talk.",
+  "The camel lives in the desert.",
+  "The polar bear lives in the Arctic.",
+  "The shark has sharp teeth.",
+  "The jellyfish lives in the sea.",
+  "The penguin lives in a cold place."
+    ];
+
+    const msSentences = [
+      "Saya pergi ke sekolah pada hari Isnin.",
+  "Kami ada kelas Bahasa Inggeris pada hari Selasa.",
+  "Hari Rabu ialah hari ketiga dalam seminggu.",
+  "Saya bermain bola sepak pada hari Khamis.",
+  "Hari Jumaat ialah hari kegemaran saya.",
+  "Saya melawat nenek saya pada hari Sabtu.",
+  "Saya berehat di rumah pada hari Ahad.",
+  "Saya membaca buku pada masa lapang saya.",
+  "Terdapat tujuh hari dalam seminggu.",
+  "Sekolah saya besar dan bersih.",
+  "Saya suka bermain bola sepak dengan kawan-kawan saya.",
+  "Kami memenangi perlawanan bola sepak itu.",
+  "Kami pergi melancong ke zoo.",
+  "Tasik itu sangat cantik.",
+  "Saya pergi berenang setiap hari Ahad.",
+  "Ibu saya sangat sibuk hari ini.",
+  "Kanak-kanak sedang bermain sorok-sorok.",
+  "Saya menonton TV pada waktu malam.",
+  "Saya pergi ke taman pada hujung minggu.",
+  "Saya hilang pensel saya.",
+  "Lukisan kamu sempurna.",
+  "Saya menunggang basikal ke taman.",
+  "Basikal saya berwarna biru.",
+  "Saya tidur pada pukul sembilan.",
+  "Makan sayur membuat kita sihat.",
+  "Saya bersenam setiap hari untuk menjaga kecergasan.",
+  "Bola sepak ialah sukan kegemaran saya.",
+  "Saya ingin belajar berenang.",
+  "Makan terlalu banyak gula tidak sihat.",
+  "Kami membuat tinjauan di dalam kelas.",
+  "Saya tidur selama lapan jam malam tadi.",
+  "Dia bermain piano dengan sangat baik.",
+  "Saya memberus gigi di bilik mandi.",
+  "Bilik tidur saya kecil tetapi bersih.",
+  "Kami menonton TV di ruang tamu.",
+  "Tetamu sedang menunggu di dewan.",
+  "Kami makan malam di ruang makan.",
+  "Ibu sedang memasak di dapur.",
+  "Berhati-hati semasa menuruni tangga.",
+  "Bilik bawah tanah terletak di bawah rumah.",
+  "Raksasa dalam cerita itu sangat menakutkan.",
+  "Baju kamu sangat comel.",
+  "Saya melihat seekor labah-labah di dinding.",
+  "Terdapat banyak bunga di taman.",
+  "Berhati-hati semasa melintas jalan.",
+  "Saya boleh menyelesaikan masalah ini.",
+  "Haiwan yang berbeza tinggal di habitat yang berbeza.",
+  "Beruang kutub tinggal di kawasan kutub.",
+  "Lautan sangat dalam.",
+  "Banyak haiwan tinggal di dalam hutan belantara.",
+  "Padang pasir sangat panas dan kering.",
+  "Kami mendaki gunung-ganang minggu lepas.",
+  "Pasir di pantai sangat lembut.",
+  "Terdapat banyak batu di atas bukit.",
+  "Karang di dalam laut sangat berwarna-warni.",
+  "Salji berwarna putih dan sejuk.",
+  "Burung kakaktua boleh bercakap.",
+  "Unta tinggal di padang pasir.",
+  "Beruang kutub tinggal di Artik.",
+  "Jerung mempunyai gigi yang tajam.",
+  "Ubur-ubur tinggal di dalam laut.",
+  "Penguin tinggal di tempat yang sejuk."
+    ];
+
+    // ===== DOM & 语音 =====
+    let currentIndex = 0;
+    const questionDiv = document.getElementById('question');
+    const wordDiv = document.getElementById('word');
+    const meaningDiv = document.getElementById('meaning');
+
+    function setMeaning(text) { meaningDiv.textContent = text || ''; }
+
+    // 统一的朗读函数（默认：慢速 0.4、音高 0.6）
+    function speak(text, lang, preferNames = [], rate = 0.4, pitch = 0.6) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.rate = rate;
+      u.pitch = pitch;
+
+      const trySpeak = () => {
+        const voices = speechSynthesis.getVoices() || [];
+        let candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith(lang.toLowerCase()));
+        // 如果没有马来语，回退印尼语
+        if (!candidates.length && lang.toLowerCase().startsWith('ms')) {
+          candidates = voices.filter(v => (v.lang || '').toLowerCase().startsWith('id'));
+          if (candidates.length) u.lang = 'id-ID';
+        }
+        for (const key of preferNames) {
+          const found = candidates.find(v => (v.name || '').toLowerCase().includes(key.toLowerCase()));
+          if (found) { u.voice = found; break; }
+        }
+        if (!u.voice && candidates.length) u.voice = candidates[0];
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      };
+
+      if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = trySpeak;
+      }
+      trySpeak();
+    }
+
+    // ===== 华文为主（按钮函数不再覆盖速率/音高）=====
+    function playChineseWord() {
+  const text = zh[currentIndex] || '';
+  const pinyin = py[currentIndex] || '';
+
+  setMeaning(pinyin);
+
+  speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+}
+
+    function showEnglish() {
+      const text = en[currentIndex] || '(待添加英文)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function playMalayWord(){
+
+const text = bm[currentIndex] || '';
+
+setMeaning(text);
+
+speak(
+text,
+'ms-MY',
+['Microsoft','Malay','Bahasa']
+);
+
+}
+
+    function showChineseSentence() {
+      const text = zhSentences[currentIndex] || '(待添加华文造句)';
+      setMeaning(text);
+      speak(text, 'zh-CN', ['Xiaoyi','Microsoft']);
+    }
+
+    function showEnglishSentence() {
+      const text = enSentences[currentIndex] || '(待添加英文句子)';
+      setMeaning(text);
+      speak(text, 'en-US', ['Google','Microsoft','Natural']);
+    }
+
+    function showMalaySentence() {
+      const text = msSentences[currentIndex] || '(待添加马来文句子)';
+      setMeaning(text);
+      speak(text, 'ms-MY', ['Rizwan','Microsoft','Malay','Bahasa']);
+    }
+
+    function nextWord() {
+
+if(currentIndex < bm.length - 1){
+
+currentIndex++;
+
+updateQuestion();
+
+}
+
+}
+
+    function prevWord(){
+
+if(currentIndex > 0){
+
+currentIndex--;
+
+updateQuestion();
+
+}
+
+}
+
+    function updateQuestion() {
+  questionDiv.innerText = `题目 ${currentIndex + 1}`;
+  wordDiv.innerText = en[currentIndex] || '—';
+  setMeaning('');
+}
+
+
+// ===== 搜索功能 =====
+function searchWord() {
+
+  const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+
+  if (!keyword) {
+    alert("请输入要搜索的词语");
+    return;
+  }
+
+
+  const index = en.findIndex(word => 
+word.toLowerCase() === keyword
+);
+
+
+  if (index !== -1) {
+
+    currentIndex = index;
+    updateQuestion();
+
+  } else {
+
+    alert("没有找到：" + keyword);
+
+  }
+
+}
+
+function showChinese(){
+
+const text = zh[currentIndex] || '';
+
+setMeaning(text);
+
+speak(
+text,
+'zh-CN',
+['Xiaoyi','Microsoft']
+);
+
+}
+
+function playEnglishWord(){
+
+const text = en[currentIndex] || '';
+
+setMeaning('');
+
+speak(
+text,
+'en-US',
+['Google','Microsoft','Natural']
+);
+
+}
+
+updateQuestion();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>听写练习</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+
+margin:0;
+
+min-height:100vh;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-family:
+"Noto Sans SC",
+Arial,
+sans-serif;
+
+
+background:
+radial-gradient(
+circle at top,
+#1f2937,
+#050505 70%
+);
+
+
+color:white;
+
+}
+    .container {
+
+
+width:95%;
+
+max-width:420px;
+
+
+padding:20px;
+
+box-sizing:border-box;
+
+
+
+background:
+
+rgba(255,255,255,0.08);
+
+
+
+backdrop-filter:blur(20px);
+
+
+
+border-radius:25px;
+
+
+
+border:
+
+1px solid rgba(255,255,255,0.15);
+
+
+
+box-shadow:
+
+0 25px 60px rgba(0,0,0,0.6);
+
+
+
+transform:
+
+perspective(1000px)
+translateZ(0);
+
+
+
+}
+    .question {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    .btn {
+
+
+font-size:16px;
+
+
+padding:
+
+12px 22px;
+
+
+
+margin:8px;
+
+
+
+border:none;
+
+
+border-radius:14px;
+
+
+
+background:
+
+linear-gradient(
+135deg,
+#2563eb,
+#60a5fa
+);
+
+
+
+color:white;
+
+
+
+cursor:pointer;
+
+
+
+box-shadow:
+
+0 10px 25px rgba(37,99,235,.4);
+
+
+
+transition:.25s;
+
+
+
+}
+
+
+.btn:hover{
+
+
+transform:
+
+translateY(-3px)
+scale(1.03);
+
+
+
+box-shadow:
+
+0 15px 35px rgba(37,99,235,.6);
+
+
+
+}
+    .summary {
+
+  margin-top:20px;
+
+  font-size:20px;
+
+  white-space:pre-wrap;
+
+  text-align:center;
+
+  line-height:1.8;
+
+}
+
+.home-btn{
+
+margin-top:20px;
+
+}
+
+.home-area{
+
+width:300px;
+height:150px;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+margin:30px auto 0;
+
+border-radius:12px;
+
+}
+
+.book-btn{
+
+
+background:
+
+linear-gradient(
+135deg,
+#7c3aed,
+#c084fc
+);
+
+
+
+}
+
+@media(max-width:600px){
+
+
+.container{
+
+width:95%;
+
+max-width:420px;
+
+padding:20px;
+
+box-sizing:border-box;
+
+}
+
+
+
+.btn{
+
+font-size:15px;
+
+padding:12px 18px;
+
+}
+
+
+
+input,
+select{
+
+font-size:15px;
+
+}
+
+
+}
+
+/* 顺序听写 - 黄色 */
+
+.normal-btn{
+
+background:
+linear-gradient(
+135deg,
+#facc15,
+#f59e0b
+);
+
+
+color:#111;
+
+
+box-shadow:
+
+0 10px 25px rgba(250,204,21,.4);
+
+}
+
+
+
+/* 随机听写 - 紫色 */
+
+.random-btn{
+
+
+background:
+
+linear-gradient(
+135deg,
+#9333ea,
+#c084fc
+);
+
+
+
+box-shadow:
+
+0 10px 25px rgba(147,51,234,.5);
+
+
+}
+
+.book-header{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+background:
+rgba(255,255,255,0.1);
+
+padding:15px;
+
+border-radius:15px;
+
+margin-bottom:15px;
+
+font-size:18px;
+
+font-weight:bold;
+
+}
+
+
+.book-row{
+
+display:flex;
+
+flex-direction:column;
+
+gap:10px;
+
+margin-bottom:12px;
+
+padding:12px;
+
+width:100%;
+
+box-sizing:border-box;
+
+}
+
+
+.book-name{
+
+width:100%;
+
+box-sizing:border-box;
+
+padding:12px;
+
+background:
+linear-gradient(
+135deg,
+#9333ea,
+#c084fc
+);
+
+border-radius:12px;
+
+font-size:15px;
+
+font-weight:bold;
+
+overflow:hidden;
+
+white-space:nowrap;
+
+text-overflow:ellipsis;
+
+}
+
+
+.edit-btn{
+
+background:
+linear-gradient(
+135deg,
+#16a34a,
+#4ade80
+);
+
+border:none;
+
+color:white;
+
+padding:10px 15px;
+
+border-radius:12px;
+
+}
+
+
+.delete-btn{
+
+background:
+linear-gradient(
+135deg,
+#dc2626,
+#fb7185
+);
+
+border:none;
+
+color:white;
+
+padding:10px 15px;
+
+border-radius:12px;
+
+}
+
+.review-btn{
+
+background:
+linear-gradient(
+135deg,
+#2563eb,
+#60a5fa
+);
+
+border:none;
+
+color:white;
+
+padding:10px 15px;
+
+border-radius:12px;
+
+}
+
+.quiz-btn{
+
+background:
+linear-gradient(
+135deg,
+#f97316,
+#fb923c
+);
+
+border:none;
+
+color:white;
+
+padding:10px 15px;
+
+border-radius:12px;
+
+cursor:pointer;
+
+}
+
+.book-buttons{
+
+display:flex;
+
+gap:5px;
+
+width:100%;
+
+box-sizing:border-box;
+
+
+}
+
+
+.book-buttons button{
+
+font-size:15px;
+
+padding:8px 5px;
+
+flex:1;
+
+white-space:nowrap;
+
+min-width:0;
+
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+
+
+<div id="setupArea">
+
+
+<input 
+id="wordInput"
+placeholder="输入词汇"
+style="
+font-size:20px;
+padding:10px;
+width:200px;
+"
+/>
+
+<select id="language"
+style="
+font-size:20px;
+padding:10px;
+">
+
+<option value="zh-CN">
+中文
+</option>
+
+<option value="en-US">
+English
+</option>
+
+<option value="ms-MY">
+BM
+</option>
+
+</select>
+
+
+<button class="btn" onclick="addWord()">
+加入
+</button>
+
+<div id="wordList" style="
+margin-top:20px;
+font-size:18px;
+text-align:left;
+">
+</div>
+
+
+<div id="bookList" style="
+margin-top:20px;
+font-size:18px;
+text-align:left;
+">
+</div>
+
+<button class="btn" onclick="startDictation()">
+开始听写
+</button>
+
+<div id="modeArea" style="display:none;margin-top:20px;">
+
+<div id="rangeArea" style="margin-top:20px;">
+
+
+<div style="display:flex; gap:10px; margin-bottom:10px;">
+
+
+<div style="flex:1;">
+<label>开始题号</label>
+<input 
+id="startNumber"
+type="number"
+value="1"
+oninput="updateNumberWord()"
+style="
+width:50%;
+padding:8px;
+border-radius:8px;
+border:none;
+">
+</div>
+
+
+<div style="flex:1;">
+<label>结束题号</label>
+<input 
+id="endNumber"
+type="number"
+oninput="updateNumberWord()"
+style="
+width:50%;
+padding:8px;
+border-radius:8px;
+border:none;
+">
+</div>
+
+
+</div>
+
+
+
+<div style="display:flex; gap:10px;">
+
+
+<div style="flex:1;">
+<label>开始词汇</label>
+<input 
+id="startWord"
+placeholder="例如：rapat"
+oninput="updateWordNumber()"
+style="
+width:50%;
+padding:8px;
+border-radius:8px;
+border:none;
+">
+</div>
+
+
+
+<div style="flex:1;">
+<label>结束词汇</label>
+<input 
+id="endWord"
+placeholder="例如：harga"
+oninput="updateWordNumber()"
+style="
+width:50%;
+padding:8px;
+border-radius:8px;
+border:none;
+">
+</div>
+
+
+</div>
+
+
+</div>
+
+<button class="btn normal-btn" onclick="startNormalMode()">
+顺序听写
+</button>
+
+
+<button class="btn random-btn" onclick="startRandomMode()">
+随机听写
+</button>
+
+</div>
+
+<button class="btn" onclick="saveBook()">
+保存词汇库
+</button>
+
+<button 
+class="btn"
+style="background:
+linear-gradient(
+135deg,
+#6c757d,
+#a0a0a0
+);"
+onclick="clearWords()">
+
+清空词汇
+
+</button>
+
+<button 
+id="saveEditBtn"
+class="btn"
+style="display:none;background:
+linear-gradient(
+135deg,
+#16a34a,
+#4ade80
+);"
+onclick="saveEdit()">
+
+保存修改
+
+</button>
+
+</div>
+
+    <div id="dictationArea" style="display:none;">
+
+
+<div class="question" id="question">
+第 1 题
+</div>
+
+
+<button class="btn" onclick="playAudio()">
+播放
+</button>
+
+
+<button class="btn" onclick="prevWord()">
+上一题
+</button>
+
+
+<button class="btn" onclick="nextWord()">
+下一题
+</button>
+
+
+</div>
+    <div class="summary" id="summary" style="display: none;"></div>
+  </div>
+
+  <script type="module">
+
+// ===== Firebase 引入 =====
+
+import { initializeApp } 
+from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+
+
+import { 
+getFirestore,
+collection,
+getDocs,
+addDoc,
+deleteDoc,
+doc,
+updateDoc
+}
+from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+
+// ===== Firebase 设置 =====
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyDM312o2SmQfFDifA_nTO_vfma1j6Cbo1w",
+
+  authDomain: "bulan-dictation.firebaseapp.com",
+
+  projectId: "bulan-dictation",
+
+  storageBucket: "bulan-dictation.firebasestorage.app",
+
+  messagingSenderId: "216516045537",
+
+  appId: "1:216516045537:web:577789d9eb0f6c88be25a0"
+
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+
+const db = getFirestore(app);
+
+
+// ===== 你原本的代码开始 =====
+
+
+let words = [];
+
+let languages = [];
+
+let currentIndex = 0;
+
+let editMode = false;
+
+let editingBookId = null;
+
+let originalWords = [];
+let originalLanguages = [];
+
+let currentMode = "";
+
+    const questionDiv = document.getElementById("question");
+    const summaryDiv = document.getElementById("summary");
+
+    function shuffle(array) {
+      return array
+        .map(value => ({ value, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ value }) => value);
+    }
+
+    function addWord(){
+
+let input=document.getElementById("wordInput");
+
+let text=input.value.trim();
+
+let lang=document.getElementById("language").value;
+
+
+if(text===""){
+
+alert("请输入词汇");
+
+return;
+
+}
+
+
+words.push(text);
+
+languages.push(lang);
+
+
+// 清空输入框
+input.value="";
+
+
+// 显示词汇列表
+updateWordList();
+
+document.getElementById("endNumber").value = words.length;
+
+updateNumberWord();
+
+}
+
+function playAudio(){
+
+const text = words[currentIndex];
+
+const utterance =
+new SpeechSynthesisUtterance(text);
+
+
+utterance.lang =
+languages[currentIndex];
+
+
+utterance.rate=0.4;
+
+utterance.pitch=0.6;
+
+
+speechSynthesis.cancel();
+
+speechSynthesis.speak(utterance);
+
+}
+
+    function nextWord() {
+      if (currentIndex < words.length - 1) {
+        currentIndex++;
+        updateQuestion();
+      } else {
+        showSummary();
+      }
+    }
+
+    function prevWord() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateQuestion();
+      }
+    }
+
+    function updateQuestion() {
+      questionDiv.innerText = `第 ${currentIndex + 1} 题`;
+      summaryDiv.style.display = "none";
+    }
+
+    function showSummary() {
+
+  let list = words.map((word, i) => `${i + 1}. ${word}`).join('\n');
+
+
+  summaryDiv.innerHTML = 
+  `
+  本次顺序：<br>
+  ${list.replace(/\n/g,"<br>")}
+
+  <br><br>
+
+
+  <div class="home-area">
+
+
+  <button class="btn"
+  style="
+  background:
+  linear-gradient(
+  135deg,
+  #16a34a,
+  #4ade4a
+  );
+  "
+  onclick="restartDictation()">
+
+  🔄 重新开始
+
+  </button>
+
+
+
+  <button class="btn home-btn" onclick="goHome()">
+
+  回到主页
+
+  </button>
+
+
+  </div>
+
+  `;
+
+
+  summaryDiv.style.display = "block";
+
+
+  questionDiv.innerText = "完成所有题目";
+
+}
+
+
+    function restart(){
+
+  currentIndex = 0;
+
+  updateQuestion();
+
+}
+
+function restartDictation(){
+
+
+// 如果之前是随机模式
+
+if(currentMode==="random"){
+
+
+let combined = words.map((word,index)=>{
+
+
+return {
+
+word:word,
+
+lang:languages[index]
+
+};
+
+
+});
+
+
+combined.sort(()=>Math.random()-0.5);
+
+
+words = combined.map(x=>x.word);
+
+languages = combined.map(x=>x.lang);
+
+
+}
+
+
+// 如果是顺序模式，不做任何改变
+
+
+currentIndex=0;
+
+
+summaryDiv.style.display="none";
+
+
+updateQuestion();
+
+
+}
+
+function startDictation(){
+
+
+if(words.length===0){
+
+alert("请先加入词汇");
+
+return;
+
+}
+
+
+// 显示模式选择
+
+document.getElementById("modeArea").style.display="block";
+
+
+}
+
+window.startDictation = startDictation;
+
+function updateWordList(){
+
+let listDiv=document.getElementById("wordList");
+
+
+let html="已加入词汇：<br><br>";
+
+
+words.forEach((word,index)=>{
+
+
+html += `
+
+<div style="margin:8px 0;">
+
+${index+1}. ${word}
+
+`;
+
+
+if(editMode){
+
+html += `
+
+
+<button 
+onclick="deleteWord(${index})"
+style="
+background:
+
+linear-gradient(
+135deg,
+#dc2626,
+#fb7185
+);
+color:white;
+border:none;
+border-radius:5px;
+margin-left:10px;
+">
+
+❌
+
+</button>
+
+
+<button 
+onclick="editWord(${index})"
+style="
+background:#9c27b0;
+color:white;
+border:none;
+border-radius:5px;
+margin-left:5px;
+">
+
+📝
+
+</button>
+
+
+`;
+
+}
+
+
+html += `</div>`;
+
+
+});
+
+
+listDiv.innerHTML=html;
+
+
+}
+
+function updateNumberWord(){
+
+
+let start =
+Number(document.getElementById("startNumber").value);
+
+
+let end =
+Number(document.getElementById("endNumber").value);
+
+
+
+if(words[start-1]){
+
+document.getElementById("startWord").value =
+words[start-1];
+
+}
+
+
+
+if(words[end-1]){
+
+document.getElementById("endWord").value =
+words[end-1];
+
+}
+
+
+}
+
+
+
+function updateWordNumber(){
+
+
+let startWord =
+document.getElementById("startWord").value.trim();
+
+
+let endWord =
+document.getElementById("endWord").value.trim();
+
+
+
+let startIndex =
+words.indexOf(startWord);
+
+
+
+if(startIndex !== -1){
+
+document.getElementById("startNumber").value =
+startIndex + 1;
+
+}
+
+
+
+let endIndex =
+words.indexOf(endWord);
+
+
+
+if(endIndex !== -1){
+
+document.getElementById("endNumber").value =
+endIndex + 1;
+
+}
+
+
+}
+
+
+
+function goHome(){
+
+  location.reload();
+
+}
+
+async function saveBook(){
+
+if(words.length===0){
+
+alert("请先加入词汇");
+
+return;
+
+}
+
+
+let name = prompt("请输入词汇库名称");
+
+
+if(!name){
+
+return;
+
+}
+
+
+try{
+
+
+await addDoc(collection(db,"vocabularyBooks"),{
+
+
+name:name,
+
+words:[...words],
+
+languages:[...languages],
+
+createdAt:new Date()
+
+
+});
+
+
+alert("保存成功："+name);
+
+
+showBooks();
+
+
+}
+catch(error){
+
+console.log(error);
+
+alert("保存失败");
+
+}
+
+
+}
+
+window.saveBook = saveBook;
+
+async function showBooks(){
+
+let div=document.getElementById("bookList");
+
+
+let html="";
+
+
+try{
+
+
+const querySnapshot = await getDocs(
+collection(db,"vocabularyBooks")
+);
+
+
+
+let books=[];
+
+
+// 先存起来
+
+querySnapshot.forEach((doc)=>{
+
+books.push({
+
+id:doc.id,
+
+...doc.data()
+
+});
+
+});
+
+
+
+// 自动 A-Z 排序
+
+books.sort((a,b)=>
+a.name.localeCompare(b.name)
+);
+
+
+
+
+// 标题
+
+html += `
+
+<div class="book-header">
+
+<span>
+📚 已有词汇库
+</span>
+
+
+<span>
+共 ${books.length} 个
+</span>
+
+
+</div>
+
+`;
+
+
+
+
+// 产生列表
+
+books.forEach((book)=>{
+
+
+html += `
+
+<div class="book-row">
+
+
+<div class="book-name"
+onclick="loadBook('${book.id}')">
+
+${book.name}
+
+</div>
+
+
+<div class="book-buttons">
+
+
+<button class="edit-btn"
+onclick="protectedEdit('${book.id}')">
+✏ 编辑
+</button>
+
+
+<button class="delete-btn"
+onclick="protectedDelete('${book.id}')">
+🗑 删除
+</button>
+
+
+<button class="review-btn"
+onclick="goReview('${book.name}')">
+📖 复习
+</button>
+
+
+<button class="quiz-btn"
+onclick="goQuiz('${book.name}')">
+📝 测验
+</button>
+
+
+</div>
+
+</div>
+
+`;
+
+});
+
+
+
+div.innerHTML=html;
+
+
+
+}
+
+catch(error){
+
+console.log(error);
+
+div.innerHTML="读取失败";
+
+}
+
+
+}
+
+async function loadBook(id){
+
+
+try{
+
+
+const querySnapshot = await getDocs(
+collection(db,"vocabularyBooks")
+);
+
+
+
+querySnapshot.forEach((doc)=>{
+
+
+if(doc.id === id){
+
+
+let data = doc.data();
+
+
+words = data.words;
+
+languages = data.languages;
+
+
+currentIndex = 0;
+
+
+updateWordList();
+
+
+// 自动设置听写范围
+
+document.getElementById("startNumber").value = 1;
+
+document.getElementById("endNumber").value = words.length;
+
+updateNumberWord();
+
+
+alert("已加载："+data.name);
+
+
+}
+
+
+});
+
+
+}
+catch(error){
+
+console.log(error);
+
+alert("加载失败");
+
+}
+
+
+}
+
+window.loadBook = loadBook;
+
+async function deleteBook(id){
+
+
+let confirmDelete = confirm(
+"确定删除这个词汇库吗？"
+);
+
+
+if(!confirmDelete){
+
+return;
+
+}
+
+
+try{
+
+
+await deleteDoc(
+doc(db,"vocabularyBooks",id)
+);
+
+
+alert("删除成功");
+
+
+showBooks();
+
+
+}
+catch(error){
+
+console.log(error);
+
+alert("删除失败");
+
+}
+
+
+}
+
+async function editBook(id){
+
+editMode = true;
+
+editingBookId = id;
+
+
+// 显示保存修改按钮
+document.getElementById("saveEditBtn").style.display="inline-block";
+
+document.querySelector(
+'button[onclick="saveBook()"]'
+).style.display="none";
+
+
+const querySnapshot =
+await getDocs(
+collection(db,"vocabularyBooks")
+);
+
+
+querySnapshot.forEach((docSnap)=>{
+
+
+if(docSnap.id===id){
+
+
+let data=docSnap.data();
+
+
+words=[...data.words];
+
+languages=[...data.languages];
+
+
+updateWordList();
+
+
+}
+
+
+});
+
+}
+
+function deleteWord(index){
+
+
+let confirmDelete = confirm(
+"确定删除这个词汇吗？"
+);
+
+
+if(!confirmDelete){
+
+return;
+
+}
+
+
+words.splice(index,1);
+
+languages.splice(index,1);
+
+
+updateWordList();
+
+
+}
+
+function editWord(index){
+
+
+let newWord = prompt(
+"修改词汇:",
+words[index]
+);
+
+
+if(newWord){
+
+words[index] = newWord;
+
+
+updateWordList();
+
+}
+
+
+}
+
+async function saveEdit(){
+
+if(!editingBookId){
+
+alert("没有编辑中的词汇库");
+
+return;
+
+}
+
+
+await updateDoc(
+doc(db,"vocabularyBooks",editingBookId),
+{
+
+words:[...words],
+
+languages:[...languages]
+
+}
+
+);
+
+
+alert("修改成功");
+
+
+editMode=false;
+
+editingBookId=null;
+
+
+// 隐藏保存修改按钮
+document.getElementById("saveEditBtn").style.display="none";
+
+
+// 重新刷新词汇列表，让❌和📝消失
+updateWordList();
+
+
+// 刷新词汇库
+showBooks();
+
+
+}
+
+function clearWords(){
+
+let confirmClear = confirm(
+"确定清空目前词汇吗？"
+);
+
+
+if(!confirmClear){
+return;
+}
+
+
+words = [];
+
+languages = [];
+
+currentIndex = 0;
+
+
+editMode = false;
+
+editingBookId = null;
+
+
+updateWordList();
+
+
+document.getElementById("saveEditBtn").style.display="none";
+
+
+alert("已清空，可以输入新的词汇");
+
+}
+
+function startNormalMode(){
+
+
+let start = Number(
+document.getElementById("startNumber").value
+);
+
+
+let end = Number(
+document.getElementById("endNumber").value
+);
+
+
+
+if(!start){
+
+start = 1;
+
+}
+
+
+
+if(!end){
+
+end = words.length;
+
+}
+
+
+
+// 保存原本词汇
+
+originalWords = [...words];
+
+originalLanguages = [...languages];
+
+
+
+// 截取范围
+
+words = originalWords.slice(start-1,end);
+
+languages = originalLanguages.slice(start-1,end);
+
+
+
+document.getElementById("setupArea").style.display="none";
+
+document.getElementById("modeArea").style.display="none";
+
+document.getElementById("dictationArea").style.display="block";
+
+currentMode="normal";
+
+currentIndex=0;
+
+updateQuestion();
+
+
+}
+
+function startRandomMode(){
+
+
+let start = Number(
+document.getElementById("startNumber").value
+);
+
+
+let end = Number(
+document.getElementById("endNumber").value
+);
+
+
+
+if(!start){
+
+start = 1;
+
+}
+
+
+if(!end){
+
+end = words.length;
+
+}
+
+
+
+// 先取得范围
+
+let selectedWords =
+words.slice(start-1,end);
+
+
+let selectedLanguages =
+languages.slice(start-1,end);
+
+
+
+// 组合
+
+let combined =
+selectedWords.map((word,index)=>{
+
+return {
+
+word:word,
+
+lang:selectedLanguages[index]
+
+}
+
+});
+
+
+
+// 随机
+
+combined.sort(()=>Math.random()-0.5);
+
+
+
+// 分开
+
+words =
+combined.map(x=>x.word);
+
+
+languages =
+combined.map(x=>x.lang);
+
+
+
+document.getElementById("setupArea").style.display="none";
+
+
+document.getElementById("modeArea").style.display="none";
+
+
+document.getElementById("dictationArea").style.display="block";
+
+currentMode="random";
+
+
+currentIndex=0;
+
+
+updateQuestion();
+
+
+}
+
+function checkAdminPassword(){
+
+let password = prompt("请输入管理员密码");
+
+
+if(password !== "123456"){
+
+alert("密码错误");
+
+return false;
+
+}
+
+
+return true;
+
+}
+
+function protectedEdit(id){
+
+if(!checkAdminPassword()){
+
+return;
+
+}
+
+
+editBook(id);
+
+}
+
+function protectedDelete(id){
+
+if(!checkAdminPassword()){
+
+return;
+
+}
+
+
+deleteBook(id);
+
+}
+
+function goReview(bookName){
+
+    let fileName = bookName.trim() + ".html";
+
+    location.href = "Review/" + fileName;
+}
+
+function goQuiz(bookName){
+
+    let fileName = bookName.trim() + ".html";
+
+    location.href = "Quiz/" + fileName;
+}
+
+
+window.goQuiz = goQuiz;
+
+window.goReview = goReview;
+
+document.getElementById("wordInput")
+.addEventListener("keydown",function(event){
+
+
+if(event.key==="Enter"){
+
+addWord();
+
+}
+
+
+});
+
+window.addWord = addWord;
+window.deleteWord = deleteWord;
+window.editWord = editWord;
+window.playAudio = playAudio;
+window.prevWord = prevWord;
+window.nextWord = nextWord;
+window.startDictation = startDictation;
+window.saveBook = saveBook;
+window.loadBook = loadBook;
+window.goHome = goHome;
+window.deleteBook = deleteBook;
+window.editBook = editBook;
+window.saveEdit = saveEdit;
+window.clearWords = clearWords;
+window.startNormalMode=startNormalMode;
+window.startRandomMode=startRandomMode;
+window.restartDictation = restartDictation;
+window.protectedEdit = protectedEdit;
+window.protectedDelete = protectedDelete;
+window.updateNumberWord = updateNumberWord;
+window.updateWordNumber = updateWordNumber;
+
+// 初始化
+restart();
+
+showBooks();
+  </script>
+</body>
+</html>
